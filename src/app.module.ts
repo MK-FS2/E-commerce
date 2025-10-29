@@ -1,13 +1,13 @@
 
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { User, UserSchema } from './Models/common/User.shema';
-import { Seller, SellerSchema } from './Models/Seller/Seller.Schema';
+import { User, UserSchema } from './Models/Users/common/Schema/User.shema';
+import { Seller, SellerSchema } from './Models/Users/Seller/Seller.Schema';
 import DevConfigs from './Common/config/Dev.config';
+import { Customer, CustomerSchema } from './Models/Users/Customer/Customer.Schema';
+
 
 
 
@@ -18,10 +18,10 @@ import DevConfigs from './Common/config/Dev.config';
   [
     ConfigModule.forRoot({isGlobal:true,load:[DevConfigs]}),
     MongooseModule.forRootAsync({inject:[ConfigService],useFactory:(configService:ConfigService)=>({uri:configService.get('DBURL')})}),
-    MongooseModule.forFeature([{name:User.name,schema:UserSchema,discriminators:[{name:Seller.name,schema:SellerSchema}]}]),
+    MongooseModule.forFeature([{name:User.name,schema:UserSchema,discriminators:[{name:Seller.name,schema:SellerSchema},{name:Customer.name,schema:CustomerSchema}]}]),
     AuthModule
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}

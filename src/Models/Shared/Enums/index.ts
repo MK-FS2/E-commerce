@@ -1,0 +1,20 @@
+
+
+export enum SpecialisationTypes {
+  ELECTRONICS = 1,
+  FASHION = 2,
+  BEAUTY = 3,
+  HOME_KITCHEN = 4,
+  SPORTS_OUTDOORS = 5,
+  BOOKS = 6,
+  TOYS = 7,
+  AUTOMOTIVE = 8,
+  GROCERY = 9,
+  HEALTH = 10,
+  PET_SUPPLIES = 11,
+  JEWELRY = 12,
+  MUSIC = 13,
+  OFFICE_SUPPLIES = 14,
+  PERSONAL_CARE = 15,
+  OTHER = 16
+}
