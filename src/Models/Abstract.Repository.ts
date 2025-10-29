@@ -5,6 +5,21 @@ export default class AbstractRepository<T>
 {
 constructor(private readonly model:Model<T>){}
 
+
+async CreatDocument(Document:T):Promise<null|HydratedDocument<T>>
+{
+ const creationresult = await this.model.create(Document)
+  if(!creationresult)
+  {
+    return null
+  }
+  else 
+  {
+    return creationresult
+  }
+
+}
+
 async Exist(Filter:RootFilterQuery<T>,Projection?:ProjectionType<T>,Options?:QueryOptions<T>):Promise<boolean>
 {
    const Result =  await this.model.findOne(Filter,Projection,Options)

@@ -2,7 +2,6 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { EmailRejex, PhoneRegex } from "../validation";
 
 
-
 @Schema({timestamps:{createdAt:true,updatedAt:false},discriminatorKey:"Role"})
 export class User 
 {
@@ -20,13 +19,13 @@ Phone:string
 OTP:string
 @Prop({ type:Date, required: function(this:User){return!!this.OTP}})
 OTPExpirationTime:Date
-@Prop({type:Boolean,required:false})
+@Prop({type:Boolean,required:false,default:false})
 isVerified:boolean;
 }
 
-
-
-
-
-
 export const UserSchema = SchemaFactory.createForClass(User)
+
+
+
+
+

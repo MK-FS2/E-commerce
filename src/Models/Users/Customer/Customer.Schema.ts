@@ -1,4 +1,27 @@
-import { Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+
+
+@Schema({ timestamps: false, _id: true })
+export class Address 
+{
+  @Prop({ required: true })
+  State: string;
+
+  @Prop({ required: true })
+  City: string;
+
+  @Prop({ required: true })
+  District: string;
+
+  @Prop({ required: true })
+  Street: string;
+
+  @Prop({ required: true })
+  House: string;
+}
+export const AddressSchema = SchemaFactory.createForClass(Address)
+
+
 
 
 
@@ -12,7 +35,9 @@ import { Schema, SchemaFactory } from "@nestjs/mongoose";
   Phone:string
   OTP:string
   OTPExpirationTime:Date
-  isVerified:boolean
+  isVerified?:boolean
+  @Prop({type:AddressSchema,required:true})
+  Address:Address 
  } 
 
 
