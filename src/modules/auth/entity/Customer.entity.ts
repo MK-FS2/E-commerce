@@ -1,4 +1,4 @@
-import {Address, Customer} from "../../../Models/Users/Customer/Customer.Schema";
+import { Address, Customer } from "@Models/Users"
 
 
 class CustomerEntity implements Partial<Customer>

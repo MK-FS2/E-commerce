@@ -1,5 +1,5 @@
 import { HttpException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
-import CustomerDTO from './dto/Signup/Customer.signupdto';
+import CustomerDTO from './dto/Signups/Customer.signupdto';
 import CustomerFactory from './factory/Customer.factory';
 import SendMail from '../../Utils/Mail';
 import CustomerRepository from '../../Models/Users/Customer/Customer.Repository';

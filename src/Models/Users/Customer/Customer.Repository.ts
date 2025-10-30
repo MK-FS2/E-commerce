@@ -7,7 +7,7 @@ import { Customer } from "./Customer.Schema";
 
 
 @Injectable()
- class CustomerRepository extends AbstractRepository<Customer>
+  export class CustomerRepository extends AbstractRepository<Customer>
  {
    constructor(@InjectModel(Customer.name) CustomerModel:Model<Customer>)
    {
@@ -15,5 +15,3 @@ import { Customer } from "./Customer.Schema";
    }
  }
 
-
- export default CustomerRepository

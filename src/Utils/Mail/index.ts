@@ -23,7 +23,7 @@ async function SendMail(toEmail: string, content: string, ExpireTime:Date):Promi
         <p style="font-size: 16px;">Your verification code is:</p>
         <p style="font-size: 24px; font-weight: bold; color: #007bff;">${content}</p>
         <p style="font-size: 14px; color: #555;">
-          This code will expire in ${ExpireTime} minute(s).
+          This code will expire in ${ExpireTime.toISOString()}.
         </p>
       </div>
     `,

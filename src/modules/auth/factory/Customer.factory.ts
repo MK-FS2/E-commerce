@@ -1,8 +1,8 @@
 import { Injectable, Scope } from "@nestjs/common";
-import CustomerEntity from "../entity/Customer.entity";
-import CustomerDTO from "../dto/Signup/Customer.signupdto";
 import * as bcrypt from 'bcrypt';
 import {nanoid} from "nanoid"
+import { CustomerDTO } from "../dto";
+import CustomerEntity from "../entity/Customer.entity";
 
 @Injectable({scope:Scope.REQUEST})
 class CustomerFactory 
