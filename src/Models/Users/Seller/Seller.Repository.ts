@@ -6,7 +6,7 @@ import AbstractRepository from "../../Abstract.Repository";
 
 
 @Injectable()
-class SellerRepository extends AbstractRepository<Seller>
+export class SellerRepository extends AbstractRepository<Seller>
 {
 constructor(@InjectModel(Seller.name) SellerModel:Model<Seller>)
 {
@@ -15,4 +15,3 @@ super(SellerModel)
 
 }
 
-export default  SellerRepository 

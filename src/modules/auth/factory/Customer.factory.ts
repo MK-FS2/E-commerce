@@ -2,19 +2,21 @@ import { Injectable, Scope } from "@nestjs/common";
 import * as bcrypt from 'bcrypt';
 import {nanoid} from "nanoid"
 import { CustomerDTO } from "../dto";
-import CustomerEntity from "../entity/Customer.entity";
+import { CustomerEntity } from "../entity";
+
 
 @Injectable({scope:Scope.REQUEST})
 class CustomerFactory 
 {
 
-   CreateCustomer(CustomerData: CustomerDTO): CustomerEntity {
+   CreateCustomer(CustomerData: CustomerDTO): CustomerEntity 
+   {
     const customer = new CustomerEntity();
     customer.FirstName = CustomerData.FirstName;
     customer.LastName  = CustomerData.LastName;
     customer.Email = CustomerData.Email;
     customer.Phone = CustomerData.Phone;
-    customer.Password = bcrypt.hashSync(CustomerData.Password, 10);
+    customer.Password = bcrypt.hashSync(CustomerData.Password,10);
     customer.Address = 
     {
         City: CustomerData.City,
@@ -23,7 +25,7 @@ class CustomerFactory
         House: CustomerData.House,
         Street: CustomerData.Street
     };
-    customer.OTP = nanoid();
+    customer.OTP = nanoid(5);
     customer.OTPExpirationTime = new Date(Date.now() + 5 * 60 * 1000);
     return customer;
 }

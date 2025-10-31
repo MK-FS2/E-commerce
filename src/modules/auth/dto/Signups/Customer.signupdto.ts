@@ -1,53 +1,27 @@
-import { IsString, IsNotEmpty, Length, Matches } from "class-validator";
-import { Customer } from "../../../../Models/Users/Customer/Customer.Schema";
-import { EmailRejex, PasswordRegex, PhoneRegex } from "../../../../Models/Users/common/validation";
+import { IsString, IsNotEmpty } from "class-validator";
 
-
-export class CustomerDTO implements Partial<Customer> {
-  @IsString()
-  @IsNotEmpty()
-  @Length(2, 12)
-  FirstName: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @Length(2, 12)
-  LastName: string;
-
-  @IsNotEmpty()
-  @IsString()
-  @Matches(EmailRejex, { message: "Invalid email format"})
-  Email: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @Matches(PasswordRegex,{message:"Invalid password format: must contain at least 1 uppercase, 1 lowercase, 1 number, 1 special character, and be at least 6 characters long",})
-  Password: string;
-
-  @IsNotEmpty()
-  @IsString()
-  @Matches(PhoneRegex, {message:"Invalid phone number format"})
-  Phone: string;
-
-  @IsNotEmpty()
-  @IsString()
+import { BaseUser } from "./BaseUser";
+export class CustomerDTO extends BaseUser 
+{
+  
+  @IsNotEmpty({ message: 'State is required' })
+  @IsString({ message: 'State must be a string' })
   State: string;
 
-  @IsNotEmpty()
-  @IsString()
+  @IsNotEmpty({ message: 'City is required' })
+  @IsString({ message: 'City must be a string' })
   City: string;
 
-  @IsNotEmpty()
-  @IsString()
+  @IsNotEmpty({ message: 'District is required' })
+  @IsString({ message: 'District must be a string' })
   District: string;
 
-  @IsNotEmpty()
-  @IsString()
+  @IsNotEmpty({ message: 'Street is required' })
+  @IsString({ message: 'Street must be a string' }) 
   Street: string;
 
-  @IsNotEmpty()
-  @IsString()
+  @IsNotEmpty({ message: 'House is required' })
+  @IsString({ message: 'House must be a string' })
   House: string;
 }
 
-export default CustomerDTO;

@@ -14,14 +14,14 @@ Phone:string
 OTP:string
 OTPExpirationTime:Date
 Password:string
-isVerified:boolean
+isVerified?:boolean
 @Prop({type:String,required:true})
-CompanyName:string
-@Prop({type:String,enum:SpecialisationTypes,required:true})
-specialisation: SpecialisationTypes;
-@Prop({type:FileSchema,required:true})
-profileImage:FileType
-@Prop({type:String,required:true,minLength:[5,"Minimum of 5 caharcters"],maxLength:[5,"Maximum of 5 caharcters"]})
+PrandName:string
+@Prop({type:[String],enum:SpecialisationTypes, required: true })
+productSpecialisation:SpecialisationTypes[];
+@Prop({type:FileSchema,required:false})
+profileImage?:FileType
+@Prop({type:String,required:true})
 TaxID:string
 }
 

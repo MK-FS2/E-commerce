@@ -20,14 +20,12 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
-    "ignoreDeprecations": "6.0",
-    "baseUrl": "./",
     "paths": 
     {
-    "@Models/*":["src/Models/*"],
-    "@Sahred/*":["src/Shared/*"],
-    "@modules/*":["src/modules/*"],
-    "@Utils/*":["src/Utils/*"]  
+    "@Models/*":["./src/Models/*"],
+    "@Sahred/*":["./src/Shared/*"],
+    "@modules/*":["./src/modules/*"],
+    "@Utils/*":["./src/Utils/*"]  
     }
   }
 }

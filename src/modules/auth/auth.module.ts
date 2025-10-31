@@ -1,19 +1,14 @@
 import { AuthController } from './auth.controller';
-import { Customer, CustomerRepository, CustomerSchema, SellerSchema, User, UserSchema } from '@Models/Users';
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
 import { AuthService } from './auth.service';
 import CustomerFactory from './factory/Customer.factory';
-import { Seller } from '@Models/Users';
-
-
-
-
+import { UserSchemaModule } from '@Sahred/Modules';
+import { SellerFactory } from './factory';
 
 @Module(
 {
-  imports:[ MongooseModule.forFeature([{name:User.name,schema:UserSchema,discriminators:[{name:Seller.name,schema:SellerSchema},{name:Customer.name,schema:CustomerSchema}]}])],
+  imports:[UserSchemaModule],
   controllers:[AuthController],
-  providers:[AuthService,CustomerFactory,CustomerRepository]
+  providers:[AuthService,CustomerFactory,SellerFactory]
 })
 export class AuthModule {}

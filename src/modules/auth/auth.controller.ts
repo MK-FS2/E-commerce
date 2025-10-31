@@ -1,6 +1,6 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CustomerDTO } from './dto';
+import { CustomerDTO, SellerDTO } from './dto';
 
 
 
@@ -11,14 +11,18 @@ export class AuthController
   constructor(private readonly authService: AuthService) {}
 
   @Post("signup/customer")
-  async SignUP(@Body() customer:CustomerDTO)
+  async SignUPCustomer(@Body() customer:CustomerDTO)
   {
-     console.log(customer)
-
    const CreationResult = await  this.authService.SignupCustomer(customer)
    if(CreationResult == true)
    return { message: "Created successfully", status: 200};
   }
 
-  
+  @Post("signup/seller")
+  async SignUPSeller(@Body() seller:SellerDTO)
+  {
+    const CreationResult = await this.authService.SignupSeller(seller)
+    if(CreationResult == true)
+    return{ message: "Created successfully", status: 200};
+  }
 }
