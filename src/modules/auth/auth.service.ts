@@ -4,7 +4,7 @@ import { HttpException, Injectable, InternalServerErrorException, UnauthorizedEx
 import CustomerFactory from './factory/Customer.factory';
 import SendMail from '../../Utils/Mail';
 import { CustomerRepository, SellerRepository } from '@Models/Users';
-import { CustomerDTO, SellerDTO } from './dto';
+import { CustomerDTO, SellerDTO, VerificationDTO } from './dto';
 
 
 
@@ -81,6 +81,32 @@ constructor(private readonly CustomerFactory:CustomerFactory,
       throw new HttpException(`${err.message} `,500)
     }
   }
+
+ async VerifyEmail(verificationDTO:VerificationDTO) 
+ {
+  const UserExist = await this.customerRepository.FindOne({Email:verificationDTO.Email},{OTP:1,OTPExpirationTime:1})
+
+   if(!UserExist)
+   {
+    throw new UnauthorizedException("Invalid Email")
+   }
+   if(UserExist.OTP != verificationDTO.OTP)
+   {
+    throw new UnauthorizedException("Invalid OTP")
+   }
+
+   if(UserExist.OTPExpirationTime <= new Date()) 
+   {
+   throw new UnauthorizedException('OTP timed out');
+   }
+
+ const RemovingResult = await this.customerRepository.UpdateOne({ Email: verificationDTO.Email },{$unset:{OTP:'',OTPExpirationTime:''}});
+ if(!RemovingResult)
+ {
+  throw new InternalServerErrorException()
+ }
+ return true
+ }
   
 
 }

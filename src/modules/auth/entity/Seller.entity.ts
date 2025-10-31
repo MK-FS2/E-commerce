@@ -1,16 +1,10 @@
 import {SpecialisationTypes } from "@Models/Shared";
 import { Seller } from "@Models/Users";
+import { BaseUserEntity } from "./BaseUserEntity";
 
 
-export class SellerEntity implements Seller
+export class SellerEntity extends BaseUserEntity implements Seller
 {
-FirstName!:string 
-LastName!:string 
-Email!:string
-Password!:string 
-OTP!:string
-OTPExpirationTime!:Date 
-Phone!:string
 productSpecialisation!:SpecialisationTypes[]
 TaxID!:string
 PrandName!:string

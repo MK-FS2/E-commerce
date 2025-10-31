@@ -4,8 +4,9 @@ import { IsNotEmpty, IsString, Length, Matches } from "class-validator";
 
 export class BaseUser implements Partial<User>
 {
-  @IsString()
-  @IsNotEmpty()
+
+  @IsString({ message: 'FirstName name must be a string' })
+  @IsNotEmpty({ message: 'FirstNamename is required' }) 
   @Length(2,12)
   FirstName: string;
 

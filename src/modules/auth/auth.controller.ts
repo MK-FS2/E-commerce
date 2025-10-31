@@ -1,6 +1,6 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CustomerDTO, SellerDTO } from './dto';
+import { CustomerDTO, SellerDTO, VerificationDTO } from './dto';
 
 
 
@@ -15,7 +15,7 @@ export class AuthController
   {
    const CreationResult = await  this.authService.SignupCustomer(customer)
    if(CreationResult == true)
-   return { message: "Created successfully", status: 200};
+   return { message: "Created successfully", status: 201};
   }
 
   @Post("signup/seller")
@@ -23,6 +23,14 @@ export class AuthController
   {
     const CreationResult = await this.authService.SignupSeller(seller)
     if(CreationResult == true)
-    return{ message: "Created successfully", status: 200};
+    return{ message: "Created successfully", status: 201};
+  }
+
+  @Post("VerifyEmail")
+  async VerifyEmail(@Body() verificationDTO:VerificationDTO)
+  {
+  const Result = await this.authService.VerifyEmail(verificationDTO)
+  if(Result == true)
+   return{ message: "Verified successfully", status: 200};
   }
 }

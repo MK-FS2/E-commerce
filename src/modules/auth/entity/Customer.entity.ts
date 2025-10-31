@@ -1,14 +1,8 @@
 import { Address, Customer } from "@Models/Users"
+import { BaseUserEntity } from "./BaseUserEntity"
 
 
-export class CustomerEntity implements Customer
+export class CustomerEntity extends BaseUserEntity implements Customer 
 {
-FirstName!:string 
-LastName!:string 
-Email!:string
-Password!:string 
-OTP!:string
-OTPExpirationTime!:Date 
-Phone!:string
 Address!:Address 
 }
