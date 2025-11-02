@@ -28,16 +28,18 @@ export const AddressSchema = SchemaFactory.createForClass(Address)
  @Schema({timestamps:{createdAt:true,updatedAt:false}})
  export class Customer 
  {
+  readonly Role?:string
   FirstName:string
   LastName:string
   Email:string
-  Password:string
-  Phone:string
-  OTP:string
-  OTPExpirationTime:Date
+  Password?:string
+  Phone?:string
+  OTP?:string
+  OTPExpirationTime?:Date
   isVerified?:boolean
-  @Prop({type:AddressSchema,required:true})
-  Address:Address 
+  @Prop({ type: AddressSchema, required: function() {return this.Agent === true;}})
+  Address?:Address 
+  UserAgent:boolean
  } 
 
 

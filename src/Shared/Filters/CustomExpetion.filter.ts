@@ -4,7 +4,7 @@ import { Response, Request } from 'express';
 @Catch()
 export class CustomException implements ExceptionFilter 
 {
-  catch(exception: unknown, host: ArgumentsHost) 
+  catch(exception:HttpException, host: ArgumentsHost) 
   {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
@@ -16,8 +16,8 @@ export class CustomException implements ExceptionFilter
     {
       statusCode: status,
       path: request.url,
-      stack: exception instanceof Error ? exception.stack : undefined,
-      message: exception instanceof HttpException ? exception.getResponse() : exception instanceof Error ? exception.message : 'Internal server error',
+      statck:exception.stack,
+      message: exception instanceof HttpException ? exception.getResponse() : (exception as Error).message
     };
     response.status(status).json(errorResponse);
   }

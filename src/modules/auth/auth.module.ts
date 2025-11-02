@@ -1,14 +1,14 @@
 import { AuthController } from './auth.controller';
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import CustomerFactory from './factory/Customer.factory';
 import { UserSchemaModule } from '@Sahred/Modules';
-import { SellerFactory } from './factory';
+import { CustomerFactory, SellerFactory } from './factory';
+import { JwtService } from '@nestjs/jwt';
 
 @Module(
 {
   imports:[UserSchemaModule],
   controllers:[AuthController],
-  providers:[AuthService,CustomerFactory,SellerFactory]
+  providers:[AuthService,CustomerFactory,SellerFactory,JwtService]
 })
 export class AuthModule {}

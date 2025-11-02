@@ -1,12 +1,13 @@
-import { Injectable, Scope } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import * as bcrypt from 'bcrypt';
 import {nanoid} from "nanoid"
 import { CustomerDTO } from "../dto";
-import { CustomerEntity } from "../entity";
+import { CustomerEntity, GoogleCustomeEntity } from "../entity";
+import { TokenPayload } from "google-auth-library";
 
 
-@Injectable({scope:Scope.REQUEST})
-class CustomerFactory 
+@Injectable()
+export class CustomerFactory 
 {
 
    CreateCustomer(CustomerData: CustomerDTO): CustomerEntity 
@@ -27,9 +28,21 @@ class CustomerFactory
     };
     customer.OTP = nanoid(5);
     customer.OTPExpirationTime = new Date(Date.now() + 5 * 60 * 1000);
+    customer.UserAgent = true
     return customer;
 }
    
-}
 
-export default CustomerFactory
+ CreateGoogleCustomer(Payload:TokenPayload):GoogleCustomeEntity
+ {
+ const customer  = new GoogleCustomeEntity()
+ 
+ customer.Email = Payload.email as unknown as string
+ customer.FirstName = Payload.given_name as unknown as string
+ customer.LastName = Payload.family_name as unknown as string
+ customer.isVerified = true
+ customer.UserAgent = false
+ return customer
+ }
+
+}

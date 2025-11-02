@@ -1,4 +1,4 @@
-import { Injectable, Scope } from "@nestjs/common";
+import { Injectable} from "@nestjs/common";
 import { SellerEntity } from "../entity";
 import { SellerDTO } from "../dto";
 import { nanoid } from "nanoid";
@@ -7,7 +7,7 @@ import * as bcrypt from 'bcrypt';
 
 
 
-@Injectable({scope:Scope.REQUEST})
+@Injectable()
 export class SellerFactory
 {
 
@@ -24,7 +24,6 @@ Seller.TaxID = CryptoJS.AES.encrypt(SellerData.TaxID,process.env.Encryptionkey a
 Seller.OTP = nanoid(5)
 Seller.Password = bcrypt.hashSync(SellerData.Password,10);
 Seller.OTPExpirationTime = new Date(Date.now() + 5 * 60 * 1000)
-Seller.productSpecialisation = SellerData.productSpecialisation
 return Seller
 }
 

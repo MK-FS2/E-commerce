@@ -11,9 +11,9 @@ FirstName:string
 LastName:string
 @Prop({type:String,required:true,unique:true,match:[EmailRegex,"Invalid email format"]})
 Email:string
-@Prop({type:String,required:true})
-Password:string
-@Prop({type:String,required:true})
+@Prop({ type: String, required: function () { return this.UserAgent === true; } })
+Password: string;
+@Prop({type:String,required: function () { return this.UserAgent === true;}})
 Phone:string
 @Prop({type:String,required:false})
 OTP:string
@@ -21,6 +21,8 @@ OTP:string
 OTPExpirationTime:Date
 @Prop({type:Boolean,required:false,default:false})
 isVerified:boolean;
+@Prop({type:Boolean,required:true})
+UserAgent:boolean
 }
 
 export const UserSchema = SchemaFactory.createForClass(User)

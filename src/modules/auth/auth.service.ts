@@ -1,10 +1,13 @@
+import { JwtService } from '@nestjs/jwt';
+import { BadRequestException, ConflictException, HttpException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
+import {CustomerRepository, SellerRepository } from '@Models/Users';
+import { CustomerDTO, LoginDTO, ResetPasswordDTO, SellerDTO, VerificationDTO } from './dto';
+import { nanoid } from 'nanoid';
+import SendMail from '@Utils/Mail';
+import { CustomerFactory, SellerFactory } from './factory';
+import * as bcrypt from 'bcrypt';
+import { OAuth2Client } from "google-auth-library";
 
-import { SellerFactory } from './factory/Seller.factory';
-import { HttpException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
-import CustomerFactory from './factory/Customer.factory';
-import SendMail from '../../Utils/Mail';
-import { CustomerRepository, SellerRepository } from '@Models/Users';
-import { CustomerDTO, SellerDTO, VerificationDTO } from './dto';
 
 
 
@@ -14,7 +17,8 @@ export class AuthService
 constructor(private readonly CustomerFactory:CustomerFactory,
   private readonly customerRepository:CustomerRepository,
   private readonly sellerFactory:SellerFactory,
-  private readonly sellerRepository:SellerRepository 
+  private readonly sellerRepository:SellerRepository ,
+  private readonly jwtService:JwtService
   ){}
 
   async SignupCustomer(customerDTO:CustomerDTO)
@@ -95,7 +99,7 @@ constructor(private readonly CustomerFactory:CustomerFactory,
     throw new UnauthorizedException("Invalid OTP")
    }
 
-   if(UserExist.OTPExpirationTime <= new Date()) 
+   if(UserExist.OTPExpirationTime as unknown as Date <= new Date()) 
    {
    throw new UnauthorizedException('OTP timed out');
    }
@@ -108,5 +112,148 @@ constructor(private readonly CustomerFactory:CustomerFactory,
  return true
  }
   
+async ResendOTP(Email:string)
+ {
+
+  const EmailExist = await this.customerRepository.Exist({Email:Email})
+  if(!EmailExist)
+  {
+  throw new BadRequestException("Invalid email")
+  }
+
+  const OTP = nanoid(5)
+  const OTPExpirationTime = new Date(Date.now() + 5 * 60 * 1000);
+ 
+  const UpdateDBResult = await this.customerRepository.UpdateOne({Email:Email},{$set:{OTP:OTP,OTPExpirationTime:OTPExpirationTime}})
+
+  if(!UpdateDBResult)
+  {
+    throw new InternalServerErrorException()
+  }
+  const result = await SendMail(Email,OTP,OTPExpirationTime);
+  if(!result)
+  {
+    await this.customerRepository.UpdateOne({Eamil:Email},{$unset:{OTP:'',OTPExpirationTime:''}})
+    throw new InternalServerErrorException("Server Error SM")
+  }
+  return true
+}
+
+async ResetPassword(resetPasswordDTO:ResetPasswordDTO)
+{
+ const UserExist = await this.customerRepository.FindOne({Email:resetPasswordDTO.Email,isVerified:true},{OTP:1,OTPExpirationTime:1})
+ if(!UserExist)
+ {
+  throw new BadRequestException("Invalid email")
+ }
+ if(UserExist.OTP != resetPasswordDTO.OTP)
+ {
+    throw new BadRequestException(`Invalid OTP`)
+ }
+ if(UserExist.OTPExpirationTime as unknown as Date <= new Date())
+ {
+    throw new BadRequestException("OTP timed out")
+ }
+ console.log(resetPasswordDTO.Password)
+ const Hashedpassword = bcrypt.hashSync(resetPasswordDTO.Password,10)
+
+ const UpdatePasswordresult = await this.customerRepository.UpdateOne({ Email: resetPasswordDTO.Email },{$set: { Password: Hashedpassword },$unset: { OTP: "", OTPExpire: "" }});
+ if(!UpdatePasswordresult)
+ {
+  throw new InternalServerErrorException()
+ }
+ return true
+}
+
+async Login(loginDTO: LoginDTO) 
+{
+  const userExist = await this.customerRepository.FindOne({ Email: loginDTO.Email,isVerified:true });
+  if (!userExist) {
+    throw new BadRequestException('Invalid Email or password');
+  }
+
+  const isPasswordValid = bcrypt.compareSync(loginDTO.Password, userExist.Password as unknown as string);
+  if (!isPasswordValid) {
+    throw new BadRequestException('Invalid Email or password');
+  }
+
+  const payload = 
+  {
+    id: userExist._id,
+    fullName: `${userExist.FirstName}-${userExist.LastName}`,
+    email: userExist.Email,
+    role: userExist.Role,
+  };
+
+  const accesstoken = this.jwtService.sign(payload, {secret: process.env.AcessToken,expiresIn:'7d'});
+  const refreshtoken = this.jwtService.sign(payload,{secret: process.env.RefreshToken,expiresIn:'30d'});
+
+  return { accesstoken,refreshtoken };
+}
+
+async SignUpCustomerGoogleAuth(OAuthToken: string) {
+  const key = process.env.ClientKey;
+  const client = new OAuth2Client(key);
+
+  const ticket = await client.verifyIdToken({ idToken: OAuthToken, audience: key });
+  const payload = ticket.getPayload();
+
+  if (!payload) {
+    throw new BadRequestException('Invalid Google token.');
+  }
+
+  if (!payload.email || !payload.given_name || !payload.family_name) {
+    throw new BadRequestException('Google account did not provide required permissions (email, first name, last name).');
+  }
+
+  const userExist = await this.customerRepository.Exist({ Email: payload.email });
+  if (userExist) {
+    throw new ConflictException('Email already exists.');
+  }
+
+  const constructedCustomer = this.CustomerFactory.CreateGoogleCustomer(payload);
+  const createdCustomer = await this.customerRepository.CreatDocument(constructedCustomer);
+
+  if (!createdCustomer) {
+    throw new InternalServerErrorException('Failed to create customer.');
+  }
+
+  return true; // or return createdCustomer for more info
+}
+
+async loginWithGoogle(OAuthToken: string) 
+{
+  
+  const key = process.env.ClientKey;
+  const client = new OAuth2Client(key);
+
+  const ticket = await client.verifyIdToken({
+      idToken: OAuthToken,
+      audience: process.env.ClientKey,
+   });
+
+    const googlePayload = ticket.getPayload();
+
+    if (!googlePayload || !googlePayload.email || !googlePayload.given_name || !googlePayload.family_name) 
+    {
+      throw new BadRequestException('Google account did not provide required permissions (email, first name, last name).',);
+    }
+
+    const userExist = await this.customerRepository.FindOne({ Email: googlePayload.email });
+    if (!userExist) 
+    {
+        throw new BadRequestException('Failed to create customer.');
+    }
+    const payload = {
+      id: userExist._id,
+      fullName: `${userExist.FirstName}-${userExist.LastName}`,
+      email: userExist.Email,
+      role: userExist.Role,
+    };
+
+    const accesstoken = this.jwtService.sign(payload, {secret: process.env.AcessToken,expiresIn: '7d'});
+    const refreshtoken = this.jwtService.sign(payload, {secret: process.env.RefreshToken,expiresIn: '30d'});
+    return { accesstoken,refreshtoken};
+  }
 
 }

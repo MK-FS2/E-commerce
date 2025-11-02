@@ -1,6 +1,7 @@
 
 
-export enum SpecialisationTypes {
+export enum SpecialisationTypes 
+{
   ELECTRONICS = 1,
   FASHION = 2,
   BEAUTY = 3,

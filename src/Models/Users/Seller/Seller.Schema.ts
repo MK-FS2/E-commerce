@@ -1,12 +1,13 @@
+import { FileSchema, FileType } from "@Models/Shared";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 
-import { SpecialisationTypes } from "../../Shared/Enums";
-import { FileSchema, FileType } from "../../Shared/Schemas";
+
 
 
 @Schema({discriminatorKey:"Role",timestamps:{createdAt:true,updatedAt:false}})
 export class Seller
 {
+readonly Role?:string
 FirstName:string
 LastName:string
 Email:string
@@ -17,8 +18,6 @@ Password:string
 isVerified?:boolean
 @Prop({type:String,required:true})
 PrandName:string
-@Prop({type:[String],enum:SpecialisationTypes, required: true })
-productSpecialisation:SpecialisationTypes[];
 @Prop({type:FileSchema,required:false})
 profileImage?:FileType
 @Prop({type:String,required:true})
