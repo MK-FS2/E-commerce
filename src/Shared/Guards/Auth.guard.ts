@@ -1,4 +1,4 @@
-import { CustomerRepository } from '@Models/Users';
+import { BaseUserRepository } from './../../Models/Users/common/BaseUserRepository';
 import { JwtService } from '@nestjs/jwt';
 import { Injectable, CanActivate, ExecutionContext, BadRequestException, UnauthorizedException } from '@nestjs/common';
 
@@ -9,7 +9,7 @@ import { Request } from 'express';
 //  IT shall be ready when i complete the token blacklisting system 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private readonly jwtService:JwtService,private readonly customerRepository:CustomerRepository) {}
+  constructor(private readonly jwtService:JwtService,private readonly baseUserRepository:BaseUserRepository) {}
 
   async canActivate(context: ExecutionContext)
    {
@@ -24,7 +24,7 @@ export class AuthGuard implements CanActivate {
     }
     const token = authorization.split(' ')[1];
     const decoded = this.jwtService.verify(token);
-    const UserExist = await this.customerRepository.FindOne({_id:decoded.id},{Password:0})
+    const UserExist = await this.baseUserRepository.FindOne({_id:decoded.id},{Password:0})
     if(!UserExist)
     {
       throw new UnauthorizedException()

@@ -1,3 +1,4 @@
+import { BaseUserRepository } from './../../Models/Users/common/BaseUserRepository';
 import { JwtService } from '@nestjs/jwt';
 import { BadRequestException, ConflictException, HttpException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import {CustomerRepository, SellerRepository } from '@Models/Users';
@@ -18,7 +19,8 @@ constructor(private readonly CustomerFactory:CustomerFactory,
   private readonly customerRepository:CustomerRepository,
   private readonly sellerFactory:SellerFactory,
   private readonly sellerRepository:SellerRepository ,
-  private readonly jwtService:JwtService
+  private readonly jwtService:JwtService,
+  private readonly baseUserRepository:BaseUserRepository
   ){}
 
   async SignupCustomer(customerDTO:CustomerDTO)
@@ -88,7 +90,7 @@ constructor(private readonly CustomerFactory:CustomerFactory,
 
  async VerifyEmail(verificationDTO:VerificationDTO) 
  {
-  const UserExist = await this.customerRepository.FindOne({Email:verificationDTO.Email},{OTP:1,OTPExpirationTime:1})
+  const UserExist = await this.baseUserRepository.FindOne({Email:verificationDTO.Email},{OTP:1,OTPExpirationTime:1})
 
    if(!UserExist)
    {
@@ -104,7 +106,7 @@ constructor(private readonly CustomerFactory:CustomerFactory,
    throw new UnauthorizedException('OTP timed out');
    }
 
- const RemovingResult = await this.customerRepository.UpdateOne({ Email: verificationDTO.Email },{$unset:{OTP:'',OTPExpirationTime:''}});
+ const RemovingResult = await this.baseUserRepository.UpdateOne({ Email: verificationDTO.Email },{$unset:{OTP:'',OTPExpirationTime:''}});
  if(!RemovingResult)
  {
   throw new InternalServerErrorException()
@@ -115,7 +117,7 @@ constructor(private readonly CustomerFactory:CustomerFactory,
 async ResendOTP(Email:string)
  {
 
-  const EmailExist = await this.customerRepository.Exist({Email:Email})
+  const EmailExist = await this.baseUserRepository.Exist({Email:Email})
   if(!EmailExist)
   {
   throw new BadRequestException("Invalid email")
@@ -124,7 +126,7 @@ async ResendOTP(Email:string)
   const OTP = nanoid(5)
   const OTPExpirationTime = new Date(Date.now() + 5 * 60 * 1000);
  
-  const UpdateDBResult = await this.customerRepository.UpdateOne({Email:Email},{$set:{OTP:OTP,OTPExpirationTime:OTPExpirationTime}})
+  const UpdateDBResult = await this.baseUserRepository.UpdateOne({Email:Email},{$set:{OTP:OTP,OTPExpirationTime:OTPExpirationTime}})
 
   if(!UpdateDBResult)
   {
@@ -141,7 +143,7 @@ async ResendOTP(Email:string)
 
 async ResetPassword(resetPasswordDTO:ResetPasswordDTO)
 {
- const UserExist = await this.customerRepository.FindOne({Email:resetPasswordDTO.Email,isVerified:true},{OTP:1,OTPExpirationTime:1})
+ const UserExist = await this.baseUserRepository.FindOne({Email:resetPasswordDTO.Email,isVerified:true},{OTP:1,OTPExpirationTime:1})
  if(!UserExist)
  {
   throw new BadRequestException("Invalid email")
@@ -157,7 +159,7 @@ async ResetPassword(resetPasswordDTO:ResetPasswordDTO)
  console.log(resetPasswordDTO.Password)
  const Hashedpassword = bcrypt.hashSync(resetPasswordDTO.Password,10)
 
- const UpdatePasswordresult = await this.customerRepository.UpdateOne({ Email: resetPasswordDTO.Email },{$set: { Password: Hashedpassword },$unset: { OTP: "", OTPExpire: "" }});
+ const UpdatePasswordresult = await this.baseUserRepository.UpdateOne({ Email: resetPasswordDTO.Email },{$set: { Password: Hashedpassword },$unset: { OTP: "", OTPExpire: "" }});
  if(!UpdatePasswordresult)
  {
   throw new InternalServerErrorException()
@@ -167,7 +169,7 @@ async ResetPassword(resetPasswordDTO:ResetPasswordDTO)
 
 async Login(loginDTO: LoginDTO) 
 {
-  const userExist = await this.customerRepository.FindOne({ Email: loginDTO.Email,isVerified:true });
+  const userExist = await this.baseUserRepository.FindOne({ Email: loginDTO.Email,isVerified:true });
   if (!userExist) {
     throw new BadRequestException('Invalid Email or password');
   }
@@ -206,19 +208,19 @@ async SignUpCustomerGoogleAuth(OAuthToken: string) {
     throw new BadRequestException('Google account did not provide required permissions (email, first name, last name).');
   }
 
-  const userExist = await this.customerRepository.Exist({ Email: payload.email });
+  const userExist = await this.baseUserRepository.Exist({ Email: payload.email });
   if (userExist) {
     throw new ConflictException('Email already exists.');
   }
 
   const constructedCustomer = this.CustomerFactory.CreateGoogleCustomer(payload);
-  const createdCustomer = await this.customerRepository.CreatDocument(constructedCustomer);
+  const createdCustomer = await this.baseUserRepository.CreatDocument(constructedCustomer);
 
   if (!createdCustomer) {
     throw new InternalServerErrorException('Failed to create customer.');
   }
 
-  return true; // or return createdCustomer for more info
+  return true; 
 }
 
 async loginWithGoogle(OAuthToken: string) 
@@ -239,12 +241,13 @@ async loginWithGoogle(OAuthToken: string)
       throw new BadRequestException('Google account did not provide required permissions (email, first name, last name).',);
     }
 
-    const userExist = await this.customerRepository.FindOne({ Email: googlePayload.email });
+    const userExist = await this.baseUserRepository.FindOne({ Email: googlePayload.email });
     if (!userExist) 
     {
         throw new BadRequestException('Failed to create customer.');
     }
-    const payload = {
+    const payload = 
+    {
       id: userExist._id,
       fullName: `${userExist.FirstName}-${userExist.LastName}`,
       email: userExist.Email,

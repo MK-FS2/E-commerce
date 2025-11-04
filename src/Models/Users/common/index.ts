@@ -1,2 +1,3 @@
-export * from "./Schema"
+export * from "./BaseUser.Shema"
+export * from "./BaseUserRepository"
 export * from "./validation"
