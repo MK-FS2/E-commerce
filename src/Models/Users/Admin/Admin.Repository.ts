@@ -1,15 +1,15 @@
 import AbstractRepository from "@Models/Abstract.Repository";
-import { User } from "./BaseUser.Shema";
 import { Model } from "mongoose";
 import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
+import { Admin } from "./Admin.Schema";
 
 
 @Injectable()
-  export class BaseUserRepository extends AbstractRepository<User>
+  export class AdminRepository extends AbstractRepository<Admin>
  {
-   constructor(@InjectModel(User.name) BaseUserModel:Model<User>)
+   constructor(@InjectModel(Admin.name) AdminModel:Model<Admin>)
    {
-    super(BaseUserModel)
+    super(AdminModel)
    }
  }

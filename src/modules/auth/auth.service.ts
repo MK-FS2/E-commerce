@@ -88,7 +88,7 @@ constructor(private readonly CustomerFactory:CustomerFactory,
     }
   }
 
- async VerifyEmail(verificationDTO:VerificationDTO) 
+async VerifyEmail(verificationDTO:VerificationDTO) 
  {
   const UserExist = await this.baseUserRepository.FindOne({Email:verificationDTO.Email},{OTP:1,OTPExpirationTime:1})
 
@@ -112,7 +112,7 @@ constructor(private readonly CustomerFactory:CustomerFactory,
   throw new InternalServerErrorException()
  }
  return true
- }
+}
   
 async ResendOTP(Email:string)
  {
