@@ -173,7 +173,10 @@ async Login(loginDTO: LoginDTO)
   if (!userExist) {
     throw new BadRequestException('Invalid Email or password');
   }
-
+  if(userExist.OTP ||userExist.OTPExpirationTime)
+  {
+    await this.baseUserRepository.UpdateOne({Email:userExist.Email},{$unset:{OTP:"",OTPExpirationTime:""}})
+  }
   const isPasswordValid = bcrypt.compareSync(loginDTO.Password, userExist.Password as unknown as string);
   if (!isPasswordValid) {
     throw new BadRequestException('Invalid Email or password');

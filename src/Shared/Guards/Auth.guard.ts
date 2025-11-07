@@ -1,39 +1,67 @@
+import { TokenRepository } from '@Models/Token';
 import { BaseUserRepository } from './../../Models/Users/common/BaseUserRepository';
 import { JwtService } from '@nestjs/jwt';
-import { Injectable, CanActivate, ExecutionContext, BadRequestException, UnauthorizedException } from '@nestjs/common';
-
+import { Injectable, CanActivate, ExecutionContext, BadRequestException, UnauthorizedException, NotFoundException } from '@nestjs/common';
 import { Request } from 'express';
+import { TokenPayload } from '@Sahred/Interfaces';
+import mongoose from 'mongoose';
 
-
-
-//  IT shall be ready when i complete the token blacklisting system 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private readonly jwtService:JwtService,private readonly baseUserRepository:BaseUserRepository) {}
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly baseUserRepository: BaseUserRepository,
+    private readonly tokenRepository: TokenRepository
+  ) {}
 
-  async canActivate(context: ExecutionContext)
-   {
-    try 
-    {
-    const req: Request = context.switchToHttp().getRequest();
-    const { authorization } = req.headers;
+  async canActivate(context: ExecutionContext) {
+    try {
+      const req: Request = context.switchToHttp().getRequest();
+      const { authorization } = req.headers;
 
-    if (!authorization || !authorization.startsWith('Bearer '))
-    {
-      throw new BadRequestException('Invalid token');
-    }
-    const token = authorization.split(' ')[1];
-    const decoded = this.jwtService.verify(token);
-    const UserExist = await this.baseUserRepository.FindOne({_id:decoded.id},{Password:0})
-    if(!UserExist)
-    {
-      throw new UnauthorizedException()
-    }
-    (req as any).User = UserExist
-    return true;
-    } 
-    catch (err) 
-    {
+      if (!authorization || !authorization.startsWith('Bearer ')) {
+        throw new BadRequestException('Invalid token');
+      }
+
+      const token = authorization.split(' ')[1];
+      const decoded: TokenPayload = this.jwtService.verify(token, {
+        secret: process.env.AcessToken,
+      });
+
+      const userId = new mongoose.Types.ObjectId(decoded.id);
+
+      // FIXED: only throw if token IS blacklisted
+      const isBlacklisted = await this.tokenRepository.CheckAccsesstoken(token, userId);
+      if (isBlacklisted) {
+        throw new UnauthorizedException('Deprecated token. Login again.');
+      }
+
+      // Optional: verify refresh token if provided
+      if (req.headers['refreashtoken']) {
+        const refreashtoken = req.headers['refreashtoken'] as string;
+        const isRefBlacklisted = await this.tokenRepository.CheckRefreashtoken(refreashtoken, userId);
+        if (isRefBlacklisted) {
+          throw new UnauthorizedException('Deprecated refresh token. Login again.');
+        }
+
+        this.jwtService.verify(refreashtoken, {
+          secret: process.env.RefreshToken,
+        });
+      }
+
+      // Verify user existence
+      const user = await this.baseUserRepository.FindOne(
+        { _id: decoded.id },
+        { Password: 0, UserAgent: 0, OTP: 0, OTPExpirationTime: 0, isVerified: 0 }
+      );
+
+      if (!user) {
+        throw new NotFoundException('No user found');
+      }
+
+      (req as any).User = user;
+      return true;
+    } catch (err) {
       throw new UnauthorizedException(err.message);
     }
   }

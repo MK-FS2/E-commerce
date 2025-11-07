@@ -1,10 +1,13 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { EmailRegex} from "./validation";
+import { Types } from "mongoose";
+
 
 
 @Schema({timestamps:{createdAt:true,updatedAt:false},discriminatorKey:"Role"})
 export class User 
 {
+readonly _id?:Types.ObjectId
 readonly Role?:string
 @Prop({type:String,required:true,minLength:2,maxLength:15})
 FirstName:string
