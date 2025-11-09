@@ -28,7 +28,7 @@ constructor(private readonly CustomerFactory:CustomerFactory,
     try 
     {
 
-    const UserExist = await this.customerRepository.Exist({Email:customerDTO.Email})
+    const UserExist = await this.baseUserRepository.Exist({Email:customerDTO.Email})
     if(UserExist === true)
     {
     throw new UnauthorizedException("UserExist")
@@ -60,7 +60,7 @@ constructor(private readonly CustomerFactory:CustomerFactory,
   {
     try 
     {
-    const UserExist = await this.sellerRepository.Exist({Email:sellerDTO.Email})
+    const UserExist = await this.baseUserRepository.Exist({Email:sellerDTO.Email})
     if(UserExist)
     {
       throw new UnauthorizedException("UserExist")

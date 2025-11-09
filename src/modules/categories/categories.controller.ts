@@ -1,12 +1,15 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { UpdateCategoryDTO } from './dto/Updatecategory.dto';
+import { Body, Controller, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { CategoryDTO } from './dto';
-import { AuthGuard } from '@Sahred/Guards/Auth.guard';
-import { UserData } from '@Sahred/Decorators';
-import mongoose from 'mongoose';
+import { Roles, UserData } from '@Sahred/Decorators';
+import mongoose, { Types } from 'mongoose';
+import { AuthGuard, RoleGuard } from '@Sahred/Guards';
+import { ValidMongoID } from '@Sahred/Pipes';
 
 @Controller('categories')
-@UseGuards(AuthGuard)
+@Roles(["Admin","Seller"])
+@UseGuards(AuthGuard,RoleGuard)
 export class CategoriesController 
 {
   constructor(private readonly categoriesService:CategoriesService) {}
@@ -17,7 +20,21 @@ export class CategoriesController
     const UserID = new mongoose.Types.ObjectId(userID)
     const Result = await this.categoriesService.AddCategory(CategoryDTO,UserID)
     if(Result ==  true)
-    return{ message: "Sent successfully", status: 200};
+    return{ message: "Category Added successfully", status: 200};
   }
-  
+
+   
+    @Put("/updatecategory/:CategoryID")
+    async UpdateCategory( @Body() updateCategoryDTO:UpdateCategoryDTO ,@UserData("_id") UserID:string ,@Param("CategoryID",ValidMongoID) CategoryID:Types.ObjectId)
+    {
+
+      const userid = new mongoose.Types.ObjectId(UserID)
+      const Result = await this.categoriesService.UpdateCategory(updateCategoryDTO,userid,CategoryID)
+      if(Result == true)
+      return{message: "Category Updated successfully", status: 200}
+
+    }
+
+
+
 }

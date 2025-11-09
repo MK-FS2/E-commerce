@@ -39,6 +39,7 @@ export const AddressSchema = SchemaFactory.createForClass(Address)
   isVerified?:boolean
   @Prop({ type: AddressSchema, required: function() {return this.Agent === true;}})
   Address?:Address 
+  @Prop({type:Boolean,required:true})
   UserAgent:boolean
  } 
 

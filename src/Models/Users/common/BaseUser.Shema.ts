@@ -25,8 +25,6 @@ OTP?:string
 OTPExpirationTime?:Date
 @Prop({type:Boolean,required:false,default:false})
 isVerified:boolean;
-@Prop({type:Boolean,required:true})
-UserAgent:boolean
 }
 
 export const UserSchema = SchemaFactory.createForClass(User)

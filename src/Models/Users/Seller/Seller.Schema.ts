@@ -16,8 +16,6 @@ OTP:string
 OTPExpirationTime:Date
 Password:string
 isVerified?:boolean
-@Prop({type:String,required:true})
-PrandName:string
 @Prop({type:FileSchema,required:false})
 profileImage?:FileType
 @Prop({type:String,required:true})

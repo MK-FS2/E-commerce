@@ -11,10 +11,4 @@ export class SellerDTO extends BaseUser
   @MinLength(5,{message:'Invalid format it must be exacly 5 charcters i'})
   @MaxLength(5,{message:'Invalid format it must be exacly 5 charcters i'})
   TaxID:string ; 
-
-  @IsString({message:"Invalid PrandName format"})
-  @IsNotEmpty({ message: 'PrandName is required' })
-  @MinLength(2,{message:'Invalid PrandName minimum 2 characters format '})
-  @MaxLength(25,{message:'Invalid PrandName maximum 25 characters format'})
-  PrandName:string
 }

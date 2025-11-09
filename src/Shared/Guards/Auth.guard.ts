@@ -7,37 +7,36 @@ import { TokenPayload } from '@Sahred/Interfaces';
 import mongoose from 'mongoose';
 
 @Injectable()
-export class AuthGuard implements CanActivate {
-  constructor(
-    private readonly jwtService: JwtService,
-    private readonly baseUserRepository: BaseUserRepository,
-    private readonly tokenRepository: TokenRepository
-  ) {}
+export class AuthGuard implements CanActivate 
+{
+  constructor( private readonly jwtService: JwtService, private readonly baseUserRepository: BaseUserRepository, private readonly tokenRepository: TokenRepository) {}
 
-  async canActivate(context: ExecutionContext) {
-    try {
+  async canActivate(context: ExecutionContext) 
+  {
+    try 
+    {
       const req: Request = context.switchToHttp().getRequest();
       const { authorization } = req.headers;
 
-      if (!authorization || !authorization.startsWith('Bearer ')) {
+      if (!authorization || !authorization.startsWith('Bearer ')) 
+      {
         throw new BadRequestException('Invalid token');
       }
 
       const token = authorization.split(' ')[1];
-      const decoded: TokenPayload = this.jwtService.verify(token, {
-        secret: process.env.AcessToken,
-      });
+      const decoded: TokenPayload = this.jwtService.verify(token, {secret: process.env.AcessToken,});
 
       const userId = new mongoose.Types.ObjectId(decoded.id);
 
-      // FIXED: only throw if token IS blacklisted
       const isBlacklisted = await this.tokenRepository.CheckAccsesstoken(token, userId);
-      if (isBlacklisted) {
+      if (isBlacklisted) 
+      {
         throw new UnauthorizedException('Deprecated token. Login again.');
       }
 
       // Optional: verify refresh token if provided
-      if (req.headers['refreashtoken']) {
+      if (req.headers['refreashtoken']) 
+      {
         const refreashtoken = req.headers['refreashtoken'] as string;
         const isRefBlacklisted = await this.tokenRepository.CheckRefreashtoken(refreashtoken, userId);
         if (isRefBlacklisted) {
@@ -49,13 +48,12 @@ export class AuthGuard implements CanActivate {
         });
       }
 
-      // Verify user existence
-      const user = await this.baseUserRepository.FindOne(
-        { _id: decoded.id },
+      const user = await this.baseUserRepository.FindOne({ _id: decoded.id },
         { Password: 0, UserAgent: 0, OTP: 0, OTPExpirationTime: 0, isVerified: 0 }
       );
 
-      if (!user) {
+      if (!user) 
+      {
         throw new NotFoundException('No user found');
       }
 

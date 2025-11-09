@@ -13,7 +13,7 @@ export class Category {
   @Prop({ type: String, required: true, unique: true })
   Slug: string;
 
-  @Prop({ type: SchemaTypes.ObjectId, ref: "Category", default: null })
+  @Prop({ type: SchemaTypes.ObjectId, ref: "Category" })
   ParentCategoryID?: Types.ObjectId;
 
   @Prop({ type: FileSchema, required: false })

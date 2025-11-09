@@ -18,7 +18,6 @@ const Seller = new SellerEntity()
 Seller.FirstName = SellerData.FirstName
 Seller.LastName = SellerData.LastName
 Seller.Email = SellerData.Email
-Seller.PrandName = SellerData.PrandName
 Seller.Phone = CryptoJS.AES.encrypt( SellerData.Phone,process.env.Encryptionkey as string).toString()
 Seller.TaxID = CryptoJS.AES.encrypt(SellerData.TaxID,process.env.Encryptionkey as string).toString() 
 Seller.OTP = nanoid(5)
