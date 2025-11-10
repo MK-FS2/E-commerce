@@ -1,14 +1,14 @@
 import { UpdateCategoryDTO } from './dto/Updatecategory.dto';
-import { Body, Controller, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { CategoryDTO } from './dto';
-import { Roles, UserData } from '@Sahred/Decorators';
+import { PublicBypass, Roles, UserData } from '@Sahred/Decorators';
 import mongoose, { Types } from 'mongoose';
 import { AuthGuard, RoleGuard } from '@Sahred/Guards';
 import { ValidMongoID } from '@Sahred/Pipes';
 
 @Controller('categories')
-@Roles(["Admin","Seller"])
+@Roles(["Admin"])
 @UseGuards(AuthGuard,RoleGuard)
 export class CategoriesController 
 {
@@ -20,7 +20,7 @@ export class CategoriesController
     const UserID = new mongoose.Types.ObjectId(userID)
     const Result = await this.categoriesService.AddCategory(CategoryDTO,UserID)
     if(Result ==  true)
-    return{ message: "Category Added successfully", status: 200};
+    return{ message: `Category Added successfully ${userID}`, status: 200};
   }
 
    
@@ -35,6 +35,11 @@ export class CategoriesController
 
     }
 
-
-
+    @Get("/allcategories")
+    @PublicBypass()
+   async GetAllCategories()
+   {
+    const Data = await this.categoriesService.GetAllCategories()
+    return{Data:Data, status: 200}
+   }
 }

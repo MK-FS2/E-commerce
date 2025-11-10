@@ -5,16 +5,23 @@ import { Injectable, CanActivate, ExecutionContext, BadRequestException, Unautho
 import { Request } from 'express';
 import { TokenPayload } from '@Sahred/Interfaces';
 import mongoose from 'mongoose';
+import { Reflector } from '@nestjs/core';
+import { ROLES_KEY } from '@Sahred/Decorators';
 
 @Injectable()
 export class AuthGuard implements CanActivate 
 {
-  constructor( private readonly jwtService: JwtService, private readonly baseUserRepository: BaseUserRepository, private readonly tokenRepository: TokenRepository) {}
+  constructor( private readonly jwtService: JwtService, private readonly baseUserRepository: BaseUserRepository, private readonly tokenRepository: TokenRepository,private readonly reflector:Reflector) {}
 
   async canActivate(context: ExecutionContext) 
   {
     try 
     {
+     const AccessState = this.reflector.get(ROLES_KEY,context.getHandler())
+      if(AccessState == "Public")
+      {
+        return true
+      }
       const req: Request = context.switchToHttp().getRequest();
       const { authorization } = req.headers;
 

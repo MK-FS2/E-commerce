@@ -11,11 +11,15 @@ export class RoleGuard implements CanActivate
     try
     {
      const AllowedRoles = this.reflector.getAllAndMerge(ROLES_KEY,[context.getHandler(),context.getClass()]);
+      if(AllowedRoles.includes("Public"))
+      {
+        return true
+      }
      const req = context.switchToHttp().getRequest()
      const UserRole:string = req.User.Role
      if(!AllowedRoles.includes(UserRole))
      {
-       throw new UnauthorizedException(`You are not authourised ${AllowedRoles[0]}`)
+       throw new UnauthorizedException(`You are not authourised`)
      }
      return true
     }

@@ -13,6 +13,5 @@ export class UpdateCategoryDTO implements Partial<Category> {
 
   
     @Optional()
-
     ParentCategoryID?: Types.ObjectId | undefined;
 }

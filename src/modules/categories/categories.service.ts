@@ -1,8 +1,8 @@
 import { BadRequestException, ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CategoryDTO, UpdateCategoryDTO } from './dto';
-import { CategoryRepository } from '@Models/Categories';
+import { Category, CategoryRepository } from '@Models/Categories';
 import { CategoryFactory } from './factory';
-import { Types } from 'mongoose';
+import { HydratedDocument, Types } from 'mongoose';
 
 
 @Injectable()
@@ -13,12 +13,10 @@ constructor(private readonly categoryRepository:CategoryRepository,private reado
 async AddCategory(CategoryDTO:CategoryDTO,UserID:Types.ObjectId)
 {
 const CategoryExist = await this.categoryRepository.FindOne({CategoryName: { $regex: `^${CategoryDTO.CategoryName}$`, $options: 'i' }});
-let Parentslug:string|undefined = ""
 if(CategoryExist)
 {
 throw new ConflictException("Category alredy exist")
 }
-
 if(CategoryDTO.ParentCategoryID)
 {
     const ParentExist = await this.categoryRepository.FindOne({_id:CategoryDTO.ParentCategoryID})
@@ -26,24 +24,15 @@ if(CategoryDTO.ParentCategoryID)
     {
         throw new BadRequestException("Parent dont exist")
     }
-    Parentslug = ParentExist.Slug
 }
-
-
-const ConstructedCategory = this.categoryFactory.CreatCategory(CategoryDTO,UserID,Parentslug)
-
+const ConstructedCategory = this.categoryFactory.CreatCategory(CategoryDTO,UserID)
 const Creationresult = await this.categoryRepository.CreatDocument(ConstructedCategory)
-if(!Creationresult)
-{
-    throw new InternalServerErrorException()
-}
+if(!Creationresult)throw new InternalServerErrorException()
 return true
 }
 
 async UpdateCategory(updateCategoryDTO: UpdateCategoryDTO, UserID: Types.ObjectId, CategoryID: Types.ObjectId) {
-    const { CategoryName, ParentCategoryID } = updateCategoryDTO;
-    let parentSlug: string | undefined;
-
+    const { CategoryName, ParentCategoryID } = updateCategoryDTO;;
     if (!CategoryName && !ParentCategoryID) 
     {
         throw new BadRequestException("You must provide at least CategoryName or ParentCategoryID");
@@ -68,15 +57,8 @@ async UpdateCategory(updateCategoryDTO: UpdateCategoryDTO, UserID: Types.ObjectI
         {
             throw new NotFoundException("Parent category not found");
         }
-
-        parentSlug = parentCategoryExist.Slug;
     } 
-    else if(categoryExist.ParentCategoryID) 
-    {
-        const OldSlug = await this.categoryRepository.FindOne({_id:categoryExist.ParentCategoryID })
-        console.log(OldSlug?.Slug)
-        parentSlug = OldSlug?.Slug
-    }
+   
 
     if (CategoryName) 
     {
@@ -87,9 +69,7 @@ async UpdateCategory(updateCategoryDTO: UpdateCategoryDTO, UserID: Types.ObjectI
             throw new ConflictException("Category name already exists");
         }
     }
-
-    const newCategory = this.categoryFactory.UpdateCategory(updateCategoryDTO,UserID, parentSlug);
-
+    const newCategory = this.categoryFactory.UpdateCategory(updateCategoryDTO,UserID);
     const updateResult = await this.categoryRepository.UpdateOne({ _id: CategoryID },{ $set: newCategory });
 
   if(!updateResult)
@@ -100,7 +80,19 @@ async UpdateCategory(updateCategoryDTO: UpdateCategoryDTO, UserID: Types.ObjectI
     return true;
 }
 
+async GetAllCategories():Promise<[]|HydratedDocument<Category>[]>
+{
+    const Categories = await this.categoryRepository.Find({ParentCategoryID:undefined},{},{populate:{path:"SubCategories",populate:{path:"SubCategories"}}})
 
+    if(!Categories)
+    {
+        return []
+    }
+    else 
+    {
+        return Categories 
+    }
+}
 
 
 }
