@@ -1,9 +1,10 @@
 import { AuthModule } from '@modules/auth';
-import { CategoriesModule } from '@modules/categories';
+import { CategoriesModule } from '@modules/category';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CommonModels } from '@Sahred/Modules';
+import { BrandModule } from './modules/brand/brand.module';
 
 
 
@@ -14,7 +15,8 @@ import { CommonModels } from '@Sahred/Modules';
     MongooseModule.forRootAsync({ useFactory: () => ({ uri: process.env.URL as string }) }),
     CommonModels,
     AuthModule,
-    CategoriesModule
+    CategoriesModule,
+    BrandModule
   ]
 })
 export class AppModule {}
