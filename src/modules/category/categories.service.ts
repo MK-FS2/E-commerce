@@ -57,6 +57,19 @@ async UpdateCategory(updateCategoryDTO: UpdateCategoryDTO, UserID: Types.ObjectI
         {
             throw new NotFoundException("Parent category not found");
         }
+
+        const SubCategories = await this.categoryRepository.Find({ParentCategoryID:CategoryID})
+        if(SubCategories)
+        {
+         for(const category of SubCategories)
+         {
+            if (category._id.equals(ParentCategoryID))
+            {
+                throw new BadRequestException("A category cant be a subcategoty of its own subcategory")
+            }
+         }
+        }
+        
     } 
    
 
@@ -94,5 +107,10 @@ async GetAllCategories():Promise<[]|HydratedDocument<Category>[]>
     }
 }
 
+async GetOneCategory(CategoryID: Types.ObjectId)
+{
+    const category = await this.categoryRepository.FindOne({_id:CategoryID},{},{populate:{path:"SubCategories",populate:{path:"SubCategories"}}})
+    return category
+}
 
 }

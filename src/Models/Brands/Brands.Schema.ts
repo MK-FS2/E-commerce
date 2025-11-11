@@ -1,0 +1,24 @@
+import { FileSchema, FileType } from "@Models/Shared";
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { SchemaTypes, Types } from "mongoose";
+
+@Schema({timestamps:true})
+export class Brand
+{
+@Prop({type:String,required:true,unique:true ,minLength:[2,"minimum of 2 characters"],maxLength:[45,"maximum of 45 characters"]})
+BrandName:string
+@Prop({type:FileSchema,required:false})
+BrandLogo?:FileType
+@Prop({type:SchemaTypes.ObjectId,required:true})
+CreatedBy:Types.ObjectId
+@Prop({ type: SchemaTypes.ObjectId, required: false, default:function(this:Brand) { return this.CreatedBy}})
+UpdatedBy?: Types.ObjectId;
+@Prop({type:String,required:true})
+Description:string
+@Prop({type:SchemaTypes.ObjectId,ref:"Category", required:true})
+CategoryID:Types.ObjectId
+}
+
+//  to add brands in category pobulate
+
+export const BrandSchema = SchemaFactory.createForClass(Brand)

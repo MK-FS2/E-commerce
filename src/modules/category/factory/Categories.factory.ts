@@ -1,4 +1,4 @@
-import { UpdateCategoryDTO } from './../dto/Updatecategory.dto';
+import { UpdateCategoryDTO } from '../dto/Updatecategory.dto';
 import { Types } from 'mongoose';
 import { Injectable } from "@nestjs/common";
 import { CategoryDTO } from "../dto";

@@ -20,7 +20,7 @@ export class CategoriesController
     const UserID = new mongoose.Types.ObjectId(userID)
     const Result = await this.categoriesService.AddCategory(CategoryDTO,UserID)
     if(Result ==  true)
-    return{ message: `Category Added successfully ${userID}`, status: 200};
+    return{ message: `Category Added successfully`, status: 200};
   }
 
    
@@ -32,7 +32,6 @@ export class CategoriesController
       const Result = await this.categoriesService.UpdateCategory(updateCategoryDTO,userid,CategoryID)
       if(Result == true)
       return{message: "Category Updated successfully", status: 200}
-
     }
 
     @Get("/allcategories")
@@ -42,4 +41,13 @@ export class CategoriesController
     const Data = await this.categoriesService.GetAllCategories()
     return{Data:Data, status: 200}
    }
+
+   @Get("/onecategory/:CategoryID")
+   @PublicBypass()
+  //  i made ValidMongoID to make validation and transformtion
+   async GetOnecategory(@Param("CategoryID",ValidMongoID) CategoryID:Types.ObjectId)
+   {
+  const Result = await this.categoriesService.GetOneCategory(CategoryID)
+   return{Data:Result, status: 200}
+  }
 }

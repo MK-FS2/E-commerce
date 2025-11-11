@@ -9,10 +9,10 @@ export class Category {
   @Prop({ type: SchemaTypes.ObjectId, required: true ,ref:"Admin"})
   CreatorID: Types.ObjectId;
 
-  @Prop({ type: String, minlength: 2, maxlength: 45, required: true })
+  @Prop({ type: String, minlength: 2, maxlength: 45, required: true ,unique:true})
   CategoryName: string;
 
-  @Prop({ type: SchemaTypes.ObjectId, ref: "Category" })
+  @Prop({ type: SchemaTypes.ObjectId, ref:"Category" })
   ParentCategoryID?: Types.ObjectId;
 
   @Prop({ type: FileSchema, required: false })
@@ -32,7 +32,6 @@ CategorySchema.virtual("SubCategories",
   foreignField:"ParentCategoryID"
 })
 
-
 CategorySchema.post("find", async function(docs: HydratedDocument<Category>[]) {
   for (const doc of docs) 
     {
@@ -51,4 +50,19 @@ CategorySchema.post("find", async function(docs: HydratedDocument<Category>[]) {
     }
     (doc as any)._doc.Slug = fullSlug;
   }
+});
+
+CategorySchema.post("findOne", async function(doc: HydratedDocument<Category> | null) {
+  if (!doc) return; 
+
+  let fullSlug = slugify(doc.CategoryName, { lower: false, trim: true });
+  let parentId = doc.ParentCategoryID;
+
+  while (parentId) {
+    const parent: HydratedDocument<Category> | null = await this.model.findById(parentId);
+    if (!parent) break;
+    fullSlug = `${slugify(parent.CategoryName, { lower: false, trim: true })}-${fullSlug}`;
+    parentId = parent.ParentCategoryID;
+  }
+  (doc as any)._doc.Slug = fullSlug;
 });
