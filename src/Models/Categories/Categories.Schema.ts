@@ -53,15 +53,15 @@ CategorySchema.post("find", async function(docs: HydratedDocument<Category>[]) {
 });
 
 CategorySchema.post("findOne", async function(doc: HydratedDocument<Category> | null) {
-  if (!doc) return; 
+  if (!doc || !doc.CategoryName) return; 
 
-  let fullSlug = slugify(doc.CategoryName, { lower: false, trim: true });
+  let fullSlug = slugify(String(doc.CategoryName), { lower: false, trim: true });
   let parentId = doc.ParentCategoryID;
 
   while (parentId) {
     const parent: HydratedDocument<Category> | null = await this.model.findById(parentId);
-    if (!parent) break;
-    fullSlug = `${slugify(parent.CategoryName, { lower: false, trim: true })}-${fullSlug}`;
+    if (!parent || !parent.CategoryName) break; // skip if no parent or parent name missing
+    fullSlug = `${slugify(String(parent.CategoryName), { lower: false, trim: true })}-${fullSlug}`;
     parentId = parent.ParentCategoryID;
   }
   (doc as any)._doc.Slug = fullSlug;

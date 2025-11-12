@@ -1,6 +1,9 @@
+import { Category } from "@Models/Categories";
 import { FileSchema, FileType } from "@Models/Shared";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { SchemaTypes, Types } from "mongoose";
+import { HydratedDocument, Model } from "mongoose";
+import {  SchemaTypes, Types } from "mongoose";
+import slugify from 'slugify';
 
 @Schema({timestamps:true})
 export class Brand
@@ -19,6 +22,20 @@ Description:string
 CategoryID:Types.ObjectId
 }
 
-//  to add brands in category pobulate
-
 export const BrandSchema = SchemaFactory.createForClass(Brand)
+
+BrandSchema.post("find",async function(docs:HydratedDocument<Brand>[])
+{
+ for(const doc of docs)
+ {
+  const CategoryModel: Model<Category> = (this.getOptions() as any).CategoryModel;
+  // it is a hydrated category but ts thinks other wise! so any be it for now   
+  const ParentCategory:any = await CategoryModel.findOne({_id:doc.CategoryID})
+ 
+  const Category = ParentCategory.toObject();
+
+  const BrandSlug = slugify(doc.BrandName, { lower: false, trim: true })
+  const fullSlug = Category.Slug + "-" + BrandSlug;
+  (doc as any)._doc.Slug = fullSlug
+ }
+})

@@ -36,7 +36,10 @@ UpdateCategory(updateCategoryDTO: UpdateCategoryDTO, UserID: Types.ObjectId) {
     {
         category.CategoryName = updateCategoryDTO.CategoryName;
     }
-
+    if(updateCategoryDTO.Status != undefined || null)
+    {
+        category.Status = updateCategoryDTO.Status
+    }
     category.CreatorID = UserID;
     category.ParentCategoryID = updateCategoryDTO.ParentCategoryID;
 

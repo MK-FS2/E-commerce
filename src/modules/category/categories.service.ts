@@ -32,10 +32,10 @@ return true
 }
 
 async UpdateCategory(updateCategoryDTO: UpdateCategoryDTO, UserID: Types.ObjectId, CategoryID: Types.ObjectId) {
-    const { CategoryName, ParentCategoryID } = updateCategoryDTO;;
-    if (!CategoryName && !ParentCategoryID) 
+    const { CategoryName, ParentCategoryID ,Status} = updateCategoryDTO;;
+    if (!CategoryName && !ParentCategoryID && Status== undefined || null) 
     {
-        throw new BadRequestException("You must provide at least CategoryName or ParentCategoryID");
+        throw new BadRequestException(`You must provide at least CategoryName or ParentCategoryID or status ${Status}`);
     }
 
     const categoryExist = await this.categoryRepository.FindOne({ _id: CategoryID },{ ParentCategoryID: 1, Slug: 1 });
@@ -83,6 +83,7 @@ async UpdateCategory(updateCategoryDTO: UpdateCategoryDTO, UserID: Types.ObjectI
         }
     }
     const newCategory = this.categoryFactory.UpdateCategory(updateCategoryDTO,UserID);
+    console.log(newCategory)
     const updateResult = await this.categoryRepository.UpdateOne({ _id: CategoryID },{ $set: newCategory });
 
   if(!updateResult)
@@ -95,7 +96,7 @@ async UpdateCategory(updateCategoryDTO: UpdateCategoryDTO, UserID: Types.ObjectI
 
 async GetAllCategories():Promise<[]|HydratedDocument<Category>[]>
 {
-    const Categories = await this.categoryRepository.Find({ParentCategoryID:undefined},{},{populate:{path:"SubCategories",populate:{path:"SubCategories"}}})
+    const Categories = await this.categoryRepository.Find({ParentCategoryID:undefined,Status:true},{},{populate:{path:"SubCategories",match:{Status:true},populate:{path:"SubCategories",match:{Status:true}}}})
 
     if(!Categories)
     {

@@ -1,5 +1,5 @@
 import { Category } from "@Models/Categories";
-import {   IsMongoId, IsOptional, IsString, Length } from "class-validator";
+import {   IsBoolean, IsMongoId, IsOptional, IsString, Length } from "class-validator";
 import { Types } from "mongoose";
 
 
@@ -15,4 +15,8 @@ export class UpdateCategoryDTO implements Partial<Category> {
     @IsOptional()
     @IsMongoId()
     ParentCategoryID?: Types.ObjectId ;
+
+    @IsOptional()
+    @IsBoolean()
+    Status:boolean
 }

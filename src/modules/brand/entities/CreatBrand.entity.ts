@@ -7,4 +7,5 @@ BrandName: string
 Description:string
 CategoryID:Types.ObjectId
 CreatedBy: Types.ObjectId 
+UpdatedBy?: Types.ObjectId 
 }

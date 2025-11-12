@@ -1,8 +1,8 @@
 import { BrandFcatory } from './factory/index';
 import { BrandRepository } from '@Models/Brands';
-import { ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException,BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { Types } from 'mongoose';
-import { CreateBrandDTO } from './dto';
+import { CreateBrandDTO, UpdateBrandDTO } from './dto';
 import { CategoryRepository } from '@Models/Categories';
 
 
@@ -36,6 +36,46 @@ export class BrandService
   return true
  }
 
+
+ async UpdateBrand(updateBrandDTO:UpdateBrandDTO,BrandID:Types.ObjectId,UserID:Types.ObjectId)
+ {
+  const {BrandName,Description,CategoryID} = updateBrandDTO
+  if(!BrandName && !Description && !CategoryID)
+  {
+    throw new BadRequestException("You should provide at least one parameter")
+  }
+  const BrandExist = await this.brandRepository.FindOne({_id:BrandID},{CategoryID:1})
+  if(!BrandExist)
+  {
+    throw new NotFoundException("No brand found")
+  }
+ if(CategoryID)
+ {
+  const CategoryExist = await this.categoryRepository.Exist({_id:CategoryID})
+  if(!CategoryExist)
+  {
+    throw new NotFoundException("No category found")
+  }
+  if(CategoryID.equals(BrandExist.CategoryID))
+  {
+    throw new ConflictException("You cant update with save data")
+  }
+ }
+ const ConstrcutedBrand = this.brandFcatory.UpdateBrand(updateBrandDTO,UserID)
+ console.log(ConstrcutedBrand)
+ const Updateresults = await this.brandRepository.UpdateOne({_id:BrandID},{$set:ConstrcutedBrand}) 
+ if(!Updateresults)
+ {
+ throw new InternalServerErrorException()
+ }
+ return true
+ }
+
+ async GetAllBrands()
+ {
+ const Brands = await this.brandRepository.GetAll()
+ return Brands
+ }
 
 
 }
