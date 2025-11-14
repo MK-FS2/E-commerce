@@ -71,10 +71,20 @@ export class BrandService
  return true
  }
 
- async GetAllBrands()
+ async GetAllBrands(Page:number,limit:number)
  {
- const Brands = await this.brandRepository.GetAll()
+ const Brands = await this.brandRepository.GetAll(Page,limit)
  return Brands
+ }
+
+ async GetOneBrand(BrandID:Types.ObjectId)
+ {
+ const BrandExist = await this.brandRepository.GetOne(BrandID)
+ if(!BrandExist)
+ {
+  throw new NotFoundException("No brand found")
+ }
+  return BrandExist
  }
 
 

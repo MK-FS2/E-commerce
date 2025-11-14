@@ -12,9 +12,9 @@ export class Brand
 BrandName:string
 @Prop({type:FileSchema,required:false})
 BrandLogo?:FileType
-@Prop({type:SchemaTypes.ObjectId,required:true})
+@Prop({type:SchemaTypes.ObjectId,required:true,ref:"Admin"})
 CreatedBy:Types.ObjectId
-@Prop({ type: SchemaTypes.ObjectId, required: false, default:function(this:Brand) { return this.CreatedBy}})
+@Prop({ type: SchemaTypes.ObjectId, required: false,ref:"Admin",default:function(this:Brand) { return this.CreatedBy}})
 UpdatedBy?: Types.ObjectId;
 @Prop({type:String,required:true})
 Description:string
@@ -33,9 +33,18 @@ BrandSchema.post("find",async function(docs:HydratedDocument<Brand>[])
   const ParentCategory:any = await CategoryModel.findOne({_id:doc.CategoryID})
  
   const Category = ParentCategory.toObject();
-
-  const BrandSlug = slugify(doc.BrandName, { lower: false, trim: true })
+  const BrandSlug = slugify(doc.BrandName,{lower:false,trim:true})
   const fullSlug = Category.Slug + "-" + BrandSlug;
   (doc as any)._doc.Slug = fullSlug
  }
+})
+
+BrandSchema.post("findOne",async function(doc:HydratedDocument<Brand>)
+{
+const CategoryModel: Model<Category> = (this.getOptions() as any).CategoryModel;
+const ParentCategory:any = await CategoryModel.findOne({_id:doc.CategoryID})
+const Category = ParentCategory.toObject();
+const BrandSlug = slugify(doc.BrandName, { lower: false, trim: true })
+const fullSlug = Category.Slug + "-" + BrandSlug;
+(doc as any)._doc.Slug = fullSlug
 })

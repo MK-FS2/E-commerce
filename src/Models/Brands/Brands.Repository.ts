@@ -1,7 +1,7 @@
 import AbstractRepository from "@Models/Abstract.Repository";
 import { Brand } from "./Brands.Schema";
 import { InjectModel } from "@nestjs/mongoose";
-import { Model } from "mongoose";
+import { Model, Types } from "mongoose";
 import { Category } from "@Models/Categories";
 
 
@@ -12,20 +12,20 @@ constructor(@InjectModel(Brand.name) private readonly BrandModel:Model<Brand>,@I
 {
     super(BrandModel)
 }
-
-async GetAll()
+// true mean public false mean authourised
+async GetAll(Page:number, Limit:number) 
 {
-     //so i can acces the categorymodel later in the hook
-    const Brands = await this.BrandModel.find({}).setOptions({CategoryModel:this.CategoryModel});
+  const Skip = (Page - 1) * Limit;
 
-    if(Brands.length > 0)
-    {
-     return Brands
-    }
-    else 
-    {
-        return []
-    }
+  const Brands = await this.BrandModel.find({}, {}, {skip: Skip,limit:Limit,populate:[{path:"CategoryID",populate:{path:"CreatorID",select:'_id FirstName Email'}},{path:"CreatedBy",select:'_id FirstName Email'},{path:"UpdatedBy",select:'_id FirstName Email'}]}).setOptions({ CategoryModel: this.CategoryModel });
+  
+  return Brands;
+}
+
+async GetOne(BrandID:Types.ObjectId)
+{
+const Brand = await this.BrandModel.findOne({_id:BrandID},{},{populate:[{path:"CategoryID",populate:{path:"CreatorID",select:'_id FirstName Email'}},{path:"CreatedBy",select:'_id FirstName Email'},{path:"UpdatedBy",select:'_id FirstName Email'}]}).setOptions({ CategoryModel: this.CategoryModel});
+return Brand
 }
 
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put, UseGuards} from '@nestjs/common';
+import { Body, Controller, DefaultValuePipe, Get, Param, ParseIntPipe, Post, Put, Query, UseGuards} from '@nestjs/common';
 import { BrandService } from './brand.service';
 import { Types } from 'mongoose';
 import { CreateBrandDTO, UpdateBrandDTO } from './dto';
@@ -32,10 +32,19 @@ export class BrandController
    
   @Get("allbrands")
   @PublicBypass()
-  async GetAll()
+  async GetAll(@Query('Page',ParseIntPipe ,new DefaultValuePipe(1)) Page:number,@Query('Limit', ParseIntPipe,new DefaultValuePipe(1)) Limit: number)
   {
-   const Data = await this.brandService.GetAllBrands()
+  
+   const Data = await this.brandService.GetAllBrands(Page,Limit)
    return {Data:Data,status: 200}
   }
+
+ @PublicBypass()
+ @Get("onebrand/:BrandID")
+ async GetOne(@Param("BrandID",ValidMongoID) BrandID:Types.ObjectId)
+ {
+  const Data = await this.brandService.GetOneBrand(BrandID)
+  return {Data:Data,status: 200}
+ }
 
 }
