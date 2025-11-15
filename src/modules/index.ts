@@ -1,3 +1,4 @@
 export * from "./auth"
 export * from "./category"
-export * from "./Produ"
+export * from "./brand"
+export * from "./product"

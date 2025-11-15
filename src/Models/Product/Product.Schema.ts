@@ -23,6 +23,66 @@ export const RatingInfoSchema = SchemaFactory.createForClass(RatingInfo)
 
 
 @Schema()
+export class BaseVariant 
+{
+    @Prop({type:SchemaTypes.Mixed, required:true})
+    Variantname:string|number
+
+    @Prop({type:Number,min:0,default:0})
+    VariantStock:number 
+     
+    @Prop({type:Boolean,required:true,default:function()
+    {
+     if(this.VariantStock === 0)
+     {
+        // as out of stock
+        return false 
+     }
+     else 
+     {
+        return true
+     }
+    }
+    })
+    Variantstatus:boolean
+
+}
+export const BaseVariantSchema = SchemaFactory.createForClass(BaseVariant)
+
+
+@Schema()
+export class Variants 
+{
+    @Prop({type:SchemaTypes.Mixed, required:true})
+    Variantname:string|number
+    
+    @Prop({type:Number,min:0,default:0})
+    VariantStock:number 
+    
+
+     @Prop({type:Boolean,required:true,default:function()
+    {
+     if(this.VariantStock === 0)
+     {
+        // as out of stock
+        return false 
+     }
+     else 
+     {
+        return true
+     }
+    }
+    })
+    Variantstatus:boolean
+
+    @Prop({type:[BaseVariantSchema],required:false})
+    SubVariants:BaseVariant[]
+
+} 
+export const VariantsSchema = SchemaFactory.createForClass(Variants)
+
+
+@Schema()
 export class Product
 {
 @Prop({type:String,required:true})
@@ -30,9 +90,6 @@ ProductName:string
 
 @Prop({type:Number,min:0,required:true})
 Price:number
-
-@Prop({type:Number,min:0,default:0})
-Stock:number
 
 @Prop({type:String,required:true,minLength:2,maxLength:400})
 Description:string
@@ -42,7 +99,7 @@ Description:string
 Brand:Types.ObjectId
 
 @Prop({type:SchemaTypes.ObjectId,required:true})
-Category:string
+Category:Types.ObjectId
 
 @Prop({type:SchemaTypes.ObjectId})
 CreatedBy:Types.ObjectId
@@ -73,7 +130,6 @@ UpdatedBy:Types.ObjectId
 })
 DiscounstAmount:number
 
-
 @Prop({type:String,enum:DiscountTypes,required:false})
 DiscountType:DiscountTypes
 
@@ -89,21 +145,20 @@ CustomerRating:RatingInfo[]
 @Prop({type:FileSchema,required:false})
 CoverImage?:FileType
 
-
 @Prop({type:[FileSchema],required:false})
 ProductImages?:FileType[]
 
-@Prop({type:[String],required:false})
-Variant1:string[]
-
-
-@Prop({type:[String],required:false})
-Variant2:string[]
+@Prop({type:[VariantsSchema],required:false})
+Variants:Variants[]
 
 @Prop({type:Boolean,default:false})
 DiscountStatus:boolean
-
-
 }
+// slug calculated 
+// totalstock calculated ,
+// final price calculated
+// total rating will be calculated
+
+
 
 export const ProductSchema = SchemaFactory.createForClass(Product)
