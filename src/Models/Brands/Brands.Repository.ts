@@ -22,9 +22,9 @@ async GetAll(Page:number, Limit:number)
   return Brands;
 }
 
-async GetOne(BrandID:Types.ObjectId)
+async GetOne(BrandID:Types.ObjectId,Bypass?:boolean)
 {
-const Brand = await this.BrandModel.findOne({_id:BrandID},{},{populate:[{path:"CategoryID",populate:{path:"CreatorID",select:'_id FirstName Email'}},{path:"CreatedBy",select:'_id FirstName Email'},{path:"UpdatedBy",select:'_id FirstName Email'}]}).setOptions({ CategoryModel: this.CategoryModel});
+const Brand = await this.BrandModel.findOne({_id:BrandID},{},{populate:[{path:"CategoryID",populate:{path:"CreatorID",select:'_id FirstName Email'}},{path:"CreatedBy",select:'_id FirstName Email'},{path:"UpdatedBy",select:'_id FirstName Email'}]}).setOptions({ CategoryModel: this.CategoryModel,Bybass:Bypass});
 return Brand
 }
 

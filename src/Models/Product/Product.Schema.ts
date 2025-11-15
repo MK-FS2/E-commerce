@@ -76,7 +76,7 @@ export class Variants
     Variantstatus:boolean
 
     @Prop({type:[BaseVariantSchema],required:false})
-    SubVariants:BaseVariant[]
+    SubVariants?:BaseVariant[]
 
 } 
 export const VariantsSchema = SchemaFactory.createForClass(Variants)
@@ -104,8 +104,6 @@ Category:Types.ObjectId
 @Prop({type:SchemaTypes.ObjectId})
 CreatedBy:Types.ObjectId
 
-@Prop({type:SchemaTypes.ObjectId})
-UpdatedBy:Types.ObjectId
 
 @Prop({type:Number,required:false,default:0,
   validate: 
@@ -128,18 +126,27 @@ UpdatedBy:Types.ObjectId
     message: "Invalid discount amount",
   },
 })
-DiscounstAmount:number
+DiscounstAmount?:number
 
-@Prop({type:String,enum:DiscountTypes,required:false})
-DiscountType:DiscountTypes
+@Prop({type:String,enum:DiscountTypes,required:function(){
+    if(this.DiscounstAmount)
+    {
+        return true
+    }
+    else 
+    {
+        return false
+    }
+}})
+DiscountType?:DiscountTypes
 
 
 @Prop({type:Number,required:false,default:0})
-SoldAmount:number
+SoldAmount?:number
 
 
 @Prop({type:[RatingInfoSchema],required:false})
-CustomerRating:RatingInfo[]
+CustomerRating?:RatingInfo[]
 
 // temporary not required
 @Prop({type:FileSchema,required:false})
@@ -148,11 +155,15 @@ CoverImage?:FileType
 @Prop({type:[FileSchema],required:false})
 ProductImages?:FileType[]
 
-@Prop({type:[VariantsSchema],required:false})
+@Prop({type:[VariantsSchema],required:true})
 Variants:Variants[]
 
 @Prop({type:Boolean,default:false})
-DiscountStatus:boolean
+DiscountStatus?:boolean
+
+@Prop({type:Boolean,default:true})
+Productstatus?:boolean
+
 }
 // slug calculated 
 // totalstock calculated ,

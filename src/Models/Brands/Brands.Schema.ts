@@ -39,12 +39,15 @@ BrandSchema.post("find",async function(docs:HydratedDocument<Brand>[])
  }
 })
 
-BrandSchema.post("findOne",async function(doc:HydratedDocument<Brand>)
+BrandSchema.post("findOne", async function (doc: HydratedDocument<Brand>) 
 {
-const CategoryModel: Model<Category> = (this.getOptions() as any).CategoryModel;
-const ParentCategory:any = await CategoryModel.findOne({_id:doc.CategoryID})
-const Category = ParentCategory.toObject();
-const BrandSlug = slugify(doc.BrandName, { lower: false, trim: true })
-const fullSlug = Category.Slug + "-" + BrandSlug;
-(doc as any)._doc.Slug = fullSlug
-})
+  if (!doc) return;
+  const { CategoryModel, Bypass } = (this.getOptions() as any);
+  if (Bypass) return true;
+  const ParentCategory: any = await CategoryModel.findOne({ _id: doc.CategoryID });
+  if (!ParentCategory) return;
+  const Category = ParentCategory.toObject();
+  const BrandSlug = slugify(doc.BrandName, { lower: false, trim: true });
+  const fullSlug = Category.Slug + "-" + BrandSlug;
+  (doc as any)._doc.Slug = fullSlug;
+});

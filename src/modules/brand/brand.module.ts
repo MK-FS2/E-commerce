@@ -12,5 +12,6 @@ import { UserSchemaModule } from '@Sahred/Modules';
   imports:[UserSchemaModule,MongooseModule.forFeature([{name:Brand.name,schema:BrandSchema},{name:Category.name,schema:CategorySchema}]),CategoriesModule],
   controllers: [BrandController],
   providers: [BrandService,BrandRepository,CategoryRepository,BrandFcatory],
+  exports:[BrandRepository]
 })
 export class BrandModule {}
