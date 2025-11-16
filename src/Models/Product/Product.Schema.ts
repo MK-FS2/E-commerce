@@ -5,11 +5,13 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { HydratedDocument, Model, ProjectionType, QueryOptions, RootFilterQuery, SchemaTypes, Types } from "mongoose";
 import slugify from 'slugify';
 
+
 export enum DiscountTypes 
 {
     Precentage ="%",
     Discreat ="$"
 }
+
 
 @Schema()
 export class RatingInfo
@@ -21,9 +23,6 @@ Description:string
 @Prop({type:Number,min:1,max:5,required:true})
 Rating:number
 }
-export const RatingInfoSchema = SchemaFactory.createForClass(RatingInfo)
-
-
 
 @Schema()
 export class BaseVariant 
@@ -50,8 +49,6 @@ export class BaseVariant
     Variantstatus:boolean
 
 }
-export const BaseVariantSchema = SchemaFactory.createForClass(BaseVariant)
-
 
 @Schema()
 export class Variants 
@@ -63,7 +60,7 @@ export class Variants
     VariantStock:number 
     
 
-     @Prop({type:Boolean,required:true,default:function()
+    @Prop({type:Boolean,required:true,default:function()
     {
      if(this.VariantStock === 0)
      {
@@ -78,11 +75,11 @@ export class Variants
     })
     Variantstatus:boolean
 
-    @Prop({type:[BaseVariantSchema],required:false})
+    @Prop({type:[BaseVariant],required:false})
     SubVariants?:BaseVariant[]
 
 } 
-export const VariantsSchema = SchemaFactory.createForClass(Variants)
+
 
 
 @Schema({timestamps:true ,toObject:{virtuals:true},toJSON:{virtuals:true}})
@@ -143,12 +140,10 @@ DiscounstAmount?:number
 }})
 DiscountType?:DiscountTypes
 
-
 @Prop({type:Number,required:false,default:0})
 SoldAmount?:number
 
-
-@Prop({type:[RatingInfoSchema],required:false})
+@Prop({type:[RatingInfo],required:false})
 CustomerRating?:RatingInfo[]
 
 // temporary not required
@@ -158,7 +153,7 @@ CoverImage?:FileType
 @Prop({type:[FileSchema],required:false})
 ProductImages?:FileType[]
 
-@Prop({type:[VariantsSchema],required:true})
+@Prop({type:[Variants],required:true})
 Variants:Variants[]
 
 @Prop({type:Boolean,default:false})
@@ -166,13 +161,9 @@ DiscountStatus?:boolean
 
 @Prop({type:Boolean,default:true})
 Productstatus?:boolean
-
 }
-// slug calculated 
+
 // totalstock calculated,
-// total rating will be calculated
-
-
 // *****************************
 // refactor the previosly refactord nested hook so it is a custom static spesfic mongoose methode to remove the need for a bypass in normal logic
 
@@ -180,9 +171,10 @@ Productstatus?:boolean
 export const ProductSchema = SchemaFactory.createForClass(Product)
 
 
+
 ProductSchema.statics.findOneProduct = async function(params: { filter: RootFilterQuery<Product>, BrandModel: Model<Brand>, CategoryModel: Model<Category>, Options?: QueryOptions<Product>, Projection?: ProjectionType<Product> }) {
     const { filter, BrandModel, CategoryModel, Options, Projection } = params;
-    const doc: HydratedDocument<Product> | null = await this.findOne(filter, Projection, Options).setOptions({ BrandModel, CategoryModel });
+    const doc: HydratedDocument<Product> | null = await this.findOne(filter, Projection, Options);
     if (!doc) return null;
     const BaseSlug = slugify(doc.ProductName, { lower: false, trim: true });
     const Parent = await BrandModel.findOne({ _id: doc.Brand }).setOptions({ CategoryModel });
@@ -195,7 +187,28 @@ ProductSchema.statics.findOneProduct = async function(params: { filter: RootFilt
     return result;
 };
 
+ProductSchema.statics.findManyProducts = async function(params: { filter: RootFilterQuery<Product>,Page:number,Limit:number,BrandModel: Model<Brand>,CategoryModel: Model<Category>,Options?: QueryOptions<Product>,Projection?: ProjectionType<Product>}) {
+  const { filter, BrandModel, CategoryModel, Options, Projection, Page,Limit } = params;
+  const Skip = Math.ceil((Page-1)*Limit)
 
+  const docs: HydratedDocument<Product>[] = await this.find(filter, Projection, Options).skip(Skip).limit(Limit)
+    console.log(docs)
+   const results: Array<Product & { Slug?:string }> = [];
+
+    for (const doc of docs) 
+    {
+      const BaseSlug = slugify(doc.ProductName, { lower: false, trim: true });
+      const Parent = await BrandModel.findOne({ _id: doc.Brand }).setOptions({ CategoryModel });
+      const result = doc.toObject();
+      if (Parent) 
+      {
+        const Casted = Parent.toObject();
+        (result as any).Slug = Casted.Slug + "-" + BaseSlug;
+      }
+        results.push(result);
+    }
+    return results;
+};
 
 ProductSchema.virtual("FinaPrice").get(function(this:Product)
 {
@@ -203,3 +216,32 @@ ProductSchema.virtual("FinaPrice").get(function(this:Product)
  return this.Price - (this.DiscounstAmount || 0)
 })
 
+ProductSchema.virtual("Rating").get(function (this:Product) 
+{
+  const ratings = this.CustomerRating || [];
+  if (ratings.length === 0) return 0;
+
+  const total = ratings.reduce((sum, r) => sum + r.Rating, 0);
+  const average = total / ratings.length;
+  return average;
+});
+
+ProductSchema.virtual("TotalStock").get(function (this: Product) {
+  const variants = this.Variants || [];
+  let totalStock = 0;
+
+  for (const variant of variants) 
+  {
+    totalStock += variant.VariantStock || 0;
+
+    if (variant.SubVariants && variant.SubVariants.length > 0) 
+    {
+     for(const subVariant of variant.SubVariants) 
+      {
+        totalStock += subVariant.VariantStock || 0;
+      }
+    }
+  }
+
+  return totalStock;
+});

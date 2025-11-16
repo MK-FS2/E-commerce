@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post, Query, UseGuards } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { AddProductDTO } from './dto';
 import { Roles, UserData } from '@Sahred/Decorators';
@@ -27,6 +27,14 @@ async GetOneProduct(@Param("ProductID",ValidMongoID) ProductID:Types.ObjectId)
 {
   const Data = await this.productService.GetOneProduct(ProductID)
   return{Data:Data,status:200}
+}
+
+@Get("getallproducts")
+async GetManyProducts(@Query("Page",ParseIntPipe) Page:number=1,@Query("Limit",ParseIntPipe) Limit:number=10)
+{
+
+const Data = await this.productService.GetManyProducts(Page,Limit)
+return{Data:Data,status:200}
 }
 
 

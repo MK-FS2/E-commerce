@@ -20,4 +20,28 @@ async FindOneProductCustom(filter: RootFilterQuery<Product>, projection?: Projec
     return product;
 }
 
+async FindManyProducts(params: { filter: RootFilterQuery<Product>, Page: number, Limit: number, projection?: ProjectionType<Product>, options?: QueryOptions<Product> }) {
+    const { filter,Page,Limit, projection, options } = params;
+
+    const Procust: HydratedDocument<Product>[] | null = await (this.ProductModel as any).findManyProducts({
+        filter,
+        BrandModel: this.BrandModel,
+        CategoryModel: this.CategoryModel,
+        Options: options,
+        Projection: projection,
+        Page:Page,
+        Limit:Limit
+    });
+
+    if (!Procust) 
+    {
+    return [];
+    } 
+    else 
+    {
+        return Procust;
+    }
+}
+
+
 }

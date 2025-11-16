@@ -48,4 +48,11 @@ async GetOneProduct(ProductId:Types.ObjectId)
   return product
 }
 
+async GetManyProducts(Page:number,Limit:number)
+{
+    const Products = await this.productRepository.FindManyProducts({filter:{},Page:Page,Limit:Limit});
+    return Products;
+}
+
+
 }
