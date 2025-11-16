@@ -10,6 +10,6 @@ import { CategoryFactory } from './factory';
   imports:[UserSchemaModule,MongooseModule.forFeature([{name:Category.name,schema:CategorySchema}])],
   controllers: [CategoriesController],
   providers: [CategoriesService,CategoryFactory,CategoryRepository],
-  exports:[CategoryRepository]
+  exports:[CategoryRepository,UserSchemaModule,MongooseModule]
 })
 export class CategoriesModule {}

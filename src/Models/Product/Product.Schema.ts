@@ -1,6 +1,9 @@
+import { Brand } from "@Models/Brands";
+import { Category } from "@Models/Categories";
 import { FileSchema, FileType } from "@Models/Shared";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { SchemaTypes, Types } from "mongoose";
+import { HydratedDocument, Model, ProjectionType, QueryOptions, RootFilterQuery, SchemaTypes, Types } from "mongoose";
+import slugify from 'slugify';
 
 export enum DiscountTypes 
 {
@@ -82,7 +85,7 @@ export class Variants
 export const VariantsSchema = SchemaFactory.createForClass(Variants)
 
 
-@Schema()
+@Schema({timestamps:true ,toObject:{virtuals:true},toJSON:{virtuals:true}})
 export class Product
 {
 @Prop({type:String,required:true})
@@ -166,10 +169,37 @@ Productstatus?:boolean
 
 }
 // slug calculated 
-// totalstock calculated ,
-// final price calculated
+// totalstock calculated,
 // total rating will be calculated
 
 
+// *****************************
+// refactor the previosly refactord nested hook so it is a custom static spesfic mongoose methode to remove the need for a bypass in normal logic
+
 
 export const ProductSchema = SchemaFactory.createForClass(Product)
+
+
+ProductSchema.statics.findOneProduct = async function(params: { filter: RootFilterQuery<Product>, BrandModel: Model<Brand>, CategoryModel: Model<Category>, Options?: QueryOptions<Product>, Projection?: ProjectionType<Product> }) {
+    const { filter, BrandModel, CategoryModel, Options, Projection } = params;
+    const doc: HydratedDocument<Product> | null = await this.findOne(filter, Projection, Options).setOptions({ BrandModel, CategoryModel });
+    if (!doc) return null;
+    const BaseSlug = slugify(doc.ProductName, { lower: false, trim: true });
+    const Parent = await BrandModel.findOne({ _id: doc.Brand }).setOptions({ CategoryModel });
+    const  result = doc.toObject(); 
+    if (Parent) 
+    {
+      const Casted = Parent.toObject();
+     (result as any).Slug = Casted.Slug + "-" + BaseSlug;
+    }
+    return result;
+};
+
+
+
+ProductSchema.virtual("FinaPrice").get(function(this:Product)
+{
+// final price calculated
+ return this.Price - (this.DiscounstAmount || 0)
+})
+

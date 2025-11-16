@@ -1,9 +1,10 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { AddProductDTO } from './dto';
 import { Roles, UserData } from '@Sahred/Decorators';
 import { Types } from 'mongoose';
 import { AuthGuard, RoleGuard } from '@Sahred/Guards';
+import { ValidMongoID } from '@Sahred/Pipes';
 
 
 @Controller('product')
@@ -20,5 +21,13 @@ async AddProduct(@Body() AddProductDTO:AddProductDTO ,@UserData("_id") UserID:Ty
  if(Result==true)
  return{ message: `Category Added successfully`, status: 200};
 }
+
+@Get("specificproduct/:ProductID")
+async GetOneProduct(@Param("ProductID",ValidMongoID) ProductID:Types.ObjectId)
+{
+  const Data = await this.productService.GetOneProduct(ProductID)
+  return{Data:Data,status:200}
+}
+
 
 }

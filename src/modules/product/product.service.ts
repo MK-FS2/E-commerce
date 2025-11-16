@@ -38,5 +38,14 @@ if(!CreationResul)
 return true
 }
 
+async GetOneProduct(ProductId:Types.ObjectId)
+{
+  const product = await this.productRepository.FindOneProductCustom({_id:ProductId})
+  if(!product)
+  {
+    throw new NotFoundException("No produut found")
+  }
+  return product
+}
 
 }

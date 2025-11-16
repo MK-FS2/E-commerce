@@ -8,6 +8,7 @@ import slugify from 'slugify';
 @Schema({timestamps:true})
 export class Brand
 {
+readonly Slug?:string
 @Prop({type:String,required:true,unique:true ,minLength:[2,"minimum of 2 characters"],maxLength:[45,"maximum of 45 characters"]})
 BrandName:string
 @Prop({type:FileSchema,required:false})
