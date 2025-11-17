@@ -4,7 +4,8 @@ import  {HydratedDocument, SchemaTypes, Types } from "mongoose";
 import slugify from 'slugify';
 
 @Schema({ timestamps: true,toJSON:{virtuals:true},toObject:{virtuals:true}})
-export class Category {
+export class Category 
+{
   readonly _id?:Types.ObjectId
   @Prop({ type: SchemaTypes.ObjectId, required: true ,ref:"Admin"})
   CreatorID: Types.ObjectId;

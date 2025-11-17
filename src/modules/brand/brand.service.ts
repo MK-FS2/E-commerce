@@ -71,15 +71,16 @@ export class BrandService
  return true
  }
 
- async GetAllBrands(Page:number,limit:number)
- {
- const Brands = await this.brandRepository.GetAll(Page,limit)
- return Brands
- }
+ async GetAllBrands(Page: number,Limit: number)
+{
+    const Skip = Math.ceil((Page - 1) * Limit);
+    const Brands = await this.brandRepository.GetAll({},{},{skip: Skip,limit:Limit,populate: [{ path: "CreatedBy", select: "_id FirstName LastName Email" }, { path: "UpdatedBy", select: "_id FirstName LastName Email" }, { path: "CategoryID", select: "_id CategoryName Slug" }]});
+    return Brands;
+}
 
  async GetOneBrand(BrandID:Types.ObjectId)
  {
- const BrandExist = await this.brandRepository.GetOne(BrandID)
+ const BrandExist = await this.brandRepository.GetOne({_id:BrandID},{},{populate: [{ path: "CreatedBy", select: "_id FirstName LastName Email" }, { path: "UpdatedBy", select: "_id FirstName LastName Email" }, { path: "CategoryID", select: "_id CategoryName Slug" }]})
  if(!BrandExist)
  {
   throw new NotFoundException("No brand found")

@@ -1,47 +1,57 @@
+import { BrandRepository } from './../Brands/Brands.Repository';
 import { InjectModel } from "@nestjs/mongoose";
 import { Product } from "./Product.Schema";
 import AbstractRepository from "@Models/Abstract.Repository";
-import { HydratedDocument, Model, ProjectionType, QueryOptions, RootFilterQuery } from "mongoose";
-import { Brand } from "@Models/Brands";
-import { Category } from "@Models/Categories";
+import {Model, ProjectionType, QueryOptions, RootFilterQuery } from "mongoose";
+import slugify from "slugify";
+
 
 
 
 export class ProductRepository extends AbstractRepository<Product>
 {
-    constructor(@InjectModel(Product.name) private readonly ProductModel:Model<Product>,@InjectModel(Brand.name) private readonly BrandModel:Model<Brand>,@InjectModel(Category.name) private readonly CategoryModel:Model<Category> )
+    constructor(@InjectModel(Product.name) private readonly ProductModel:Model<Product>, private readonly brandRepository:BrandRepository)
     {
         super(ProductModel)
     }
 
-async FindOneProductCustom(filter: RootFilterQuery<Product>, projection?: ProjectionType<Product>, options?: QueryOptions<Product>) 
-{
-    const product: HydratedDocument<Product> | null = await (this.ProductModel as any).findOneProduct({ filter, BrandModel: this.BrandModel, CategoryModel: this.CategoryModel, Options: options, Projection: projection });
-    return product;
+async GetOne(Filter: RootFilterQuery<Product>,Projection?: ProjectionType<Product>,Options?: QueryOptions<Product>) {
+  const doc = await this.FindOne(Filter, Projection, Options);
+  if (!doc) return null;
+  let Doc:any
+  const BaseSlug = slugify(doc.ProductName, { lower: false, trim: true });
+  const Parent = await this.brandRepository.GetOne({ _id: doc.Brand });
+
+  if (Parent) 
+  {
+    const BrandSlug = (Parent as any).Slug ?? slugify(Parent.BrandName, { lower: false, trim: true });
+     Doc = doc.toObject();
+    Doc.Slug = `${BrandSlug}-${BaseSlug}`;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  return Doc;
 }
 
-async FindManyProducts(params: { filter: RootFilterQuery<Product>, Page: number, Limit: number, projection?: ProjectionType<Product>, options?: QueryOptions<Product> }) {
-    const { filter,Page,Limit, projection, options } = params;
+async GetMany(Filter: RootFilterQuery<Product>,Projection?: ProjectionType<Product>,Options?: QueryOptions<Product>) {
+  const docs = await this.Find(Filter, Projection, Options);
+  if (!docs) return [];
 
-    const Procust: HydratedDocument<Product>[] | null = await (this.ProductModel as any).findManyProducts({
-        filter,
-        BrandModel: this.BrandModel,
-        CategoryModel: this.CategoryModel,
-        Options: options,
-        Projection: projection,
-        Page:Page,
-        Limit:Limit
-    });
+  const results:any[] = [];
 
-    if (!Procust) 
-    {
-    return [];
-    } 
-    else 
-    {
-        return Procust;
-    }
+  for (const doc of docs) 
+  {
+    const BaseSlug = slugify(doc.ProductName, { lower: false, trim: true });
+
+    const ParentBrand = await this.brandRepository.GetOne({ _id: doc.Brand });
+    if (!ParentBrand) continue; 
+    const BrandSlug = (ParentBrand as any).Slug ?? slugify(ParentBrand.BrandName, { lower: false, trim: true });
+    const Doc = doc.toObject();
+    (Doc as any).Slug = `${BrandSlug}-${BaseSlug}`;
+    results.push(Doc);
+  }
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  return results;
 }
-
 
 }

@@ -1,9 +1,7 @@
-import { Brand } from "@Models/Brands";
-import { Category } from "@Models/Categories";
 import { FileSchema, FileType } from "@Models/Shared";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { HydratedDocument, Model, ProjectionType, QueryOptions, RootFilterQuery, SchemaTypes, Types } from "mongoose";
-import slugify from 'slugify';
+import { SchemaTypes, Types } from "mongoose";
+
 
 
 export enum DiscountTypes 
@@ -163,57 +161,21 @@ DiscountStatus?:boolean
 Productstatus?:boolean
 }
 
-// totalstock calculated,
-// *****************************
-// refactor the previosly refactord nested hook so it is a custom static spesfic mongoose methode to remove the need for a bypass in normal logic
-
-
 export const ProductSchema = SchemaFactory.createForClass(Product)
 
-
-
-ProductSchema.statics.findOneProduct = async function(params: { filter: RootFilterQuery<Product>, BrandModel: Model<Brand>, CategoryModel: Model<Category>, Options?: QueryOptions<Product>, Projection?: ProjectionType<Product> }) {
-    const { filter, BrandModel, CategoryModel, Options, Projection } = params;
-    const doc: HydratedDocument<Product> | null = await this.findOne(filter, Projection, Options);
-    if (!doc) return null;
-    const BaseSlug = slugify(doc.ProductName, { lower: false, trim: true });
-    const Parent = await BrandModel.findOne({ _id: doc.Brand }).setOptions({ CategoryModel });
-    const  result = doc.toObject(); 
-    if (Parent) 
-    {
-      const Casted = Parent.toObject();
-     (result as any).Slug = Casted.Slug + "-" + BaseSlug;
-    }
-    return result;
-};
-
-ProductSchema.statics.findManyProducts = async function(params: { filter: RootFilterQuery<Product>,Page:number,Limit:number,BrandModel: Model<Brand>,CategoryModel: Model<Category>,Options?: QueryOptions<Product>,Projection?: ProjectionType<Product>}) {
-  const { filter, BrandModel, CategoryModel, Options, Projection, Page,Limit } = params;
-  const Skip = Math.ceil((Page-1)*Limit)
-
-  const docs: HydratedDocument<Product>[] = await this.find(filter, Projection, Options).skip(Skip).limit(Limit)
-    console.log(docs)
-   const results: Array<Product & { Slug?:string }> = [];
-
-    for (const doc of docs) 
-    {
-      const BaseSlug = slugify(doc.ProductName, { lower: false, trim: true });
-      const Parent = await BrandModel.findOne({ _id: doc.Brand }).setOptions({ CategoryModel });
-      const result = doc.toObject();
-      if (Parent) 
-      {
-        const Casted = Parent.toObject();
-        (result as any).Slug = Casted.Slug + "-" + BaseSlug;
-      }
-        results.push(result);
-    }
-    return results;
-};
 
 ProductSchema.virtual("FinaPrice").get(function(this:Product)
 {
 // final price calculated
+if(this.DiscountStatus == true)
+{
  return this.Price - (this.DiscounstAmount || 0)
+}
+else 
+{
+   return this.Price
+}
+
 })
 
 ProductSchema.virtual("Rating").get(function (this:Product) 
@@ -227,19 +189,13 @@ ProductSchema.virtual("Rating").get(function (this:Product)
 });
 
 ProductSchema.virtual("TotalStock").get(function (this: Product) {
-  const variants = this.Variants || [];
   let totalStock = 0;
 
-  for (const variant of variants) 
-  {
-    totalStock += variant.VariantStock || 0;
+  for (const variant of this.Variants ?? []) {
+    totalStock += variant.VariantStock;
 
-    if (variant.SubVariants && variant.SubVariants.length > 0) 
-    {
-     for(const subVariant of variant.SubVariants) 
-      {
-        totalStock += subVariant.VariantStock || 0;
-      }
+    for (const subVariant of variant.SubVariants ?? []) {
+      totalStock += subVariant.VariantStock;
     }
   }
 

@@ -1,8 +1,9 @@
 import AbstractRepository from "@Models/Abstract.Repository";
 import { Brand } from "./Brands.Schema";
 import { InjectModel } from "@nestjs/mongoose";
-import { Model, Types } from "mongoose";
+import {  Model, ProjectionType, QueryOptions, RootFilterQuery} from "mongoose";
 import { Category } from "@Models/Categories";
+import slugify from "slugify";
 
 
 
@@ -12,20 +13,47 @@ constructor(@InjectModel(Brand.name) private readonly BrandModel:Model<Brand>,@I
 {
     super(BrandModel)
 }
-// true mean public false mean authourised
-async GetAll(Page:number, Limit:number) 
-{
-  const Skip = (Page - 1) * Limit;
 
-  const Brands = await this.BrandModel.find({}, {}, {skip: Skip,limit:Limit,populate:[{path:"CategoryID",populate:{path:"CreatorID",select:'_id FirstName Email'}},{path:"CreatedBy",select:'_id FirstName Email'},{path:"UpdatedBy",select:'_id FirstName Email'}]}).setOptions({ CategoryModel: this.CategoryModel });
-  
-  return Brands;
+async GetAll(Filter: RootFilterQuery<Brand>, Projection: ProjectionType<Brand>,Options:QueryOptions<Brand>) 
+{
+    const docs = await this.Find(Filter, Projection,Options);
+
+    if (!docs || docs.length === 0) return [];
+
+    const result: any[] = [];
+
+    for (const doc of docs) 
+    {
+        const ParentCategory: any = await this.CategoryModel.findOne({ _id: doc.CategoryID });
+        if (!ParentCategory) continue;
+
+        const Category = ParentCategory.toObject();
+        const BrandSlug = slugify(doc.BrandName, { lower: false, trim: true });
+        const fullSlug = `${Category.Slug}-${BrandSlug}`;
+        
+        const Doc = doc.toObject();
+
+        (Doc as any).Slug = fullSlug;
+        result.push(Doc);
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return result;
 }
 
-async GetOne(BrandID:Types.ObjectId,Bypass?:boolean)
+async GetOne(Filter: RootFilterQuery<Brand>,Projection?: ProjectionType<Brand>,Options?: QueryOptions<Brand>) 
 {
-const Brand = await this.BrandModel.findOne({_id:BrandID},{},{populate:[{path:"CategoryID",populate:{path:"CreatorID",select:'_id FirstName Email'}},{path:"CreatedBy",select:'_id FirstName Email'},{path:"UpdatedBy",select:'_id FirstName Email'}]}).setOptions({ CategoryModel: this.CategoryModel,Bybass:Bypass});
-return Brand
+  const doc = await this.FindOne(Filter, Projection, Options);
+  if (!doc) return null;
+  const ParentCategory = await this.CategoryModel.findOne({ _id: doc.CategoryID });
+  if (!ParentCategory) return null;
+  const Category:any = ParentCategory.toObject();
+  const BrandSlug = slugify(doc.BrandName, { lower: false, trim: true });
+  const fullSlug = `${Category.Slug}-${BrandSlug}`;
+  
+  const Doc = doc.toObject();
+
+  (Doc as any).Slug = fullSlug;
+  return Doc;
 }
 
 }

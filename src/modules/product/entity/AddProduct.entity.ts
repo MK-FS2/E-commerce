@@ -13,4 +13,5 @@ CreatedBy: Types.ObjectId
 Productstatus?: boolean | undefined;
 Variants: Variants[] 
 Price: number 
+DiscountStatus?: boolean | undefined;
 }

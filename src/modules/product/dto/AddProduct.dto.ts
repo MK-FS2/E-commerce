@@ -121,11 +121,6 @@ export class AddProductDTO
   @IsEnum(DiscountTypes, { message: "DiscountType must be '%' or '$'" })
   DiscountType: DiscountTypes;
 
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  SoldAmount?: number;
-
 
   @IsArray()
   @ValidateNested({ each: true })
