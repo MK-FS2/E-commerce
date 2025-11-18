@@ -59,7 +59,9 @@ export function IsValidDiscount(validationOptions?: ValidationOptions)
 export class BaseVariantDTO 
 {
   @IsNotEmpty()
-  Variantname: string | number;
+  @IsString()
+  @MinLength(2)
+  Variantname: string 
 
   @IsNumber()
   @Min(0)
@@ -73,7 +75,9 @@ export class BaseVariantDTO
 export class VariantDTO 
 {
   @IsNotEmpty()
-  Variantname: string | number;
+  @MinLength(2)
+  @IsString()
+  Variantname: string 
 
   @IsNumber()
   @Min(0)

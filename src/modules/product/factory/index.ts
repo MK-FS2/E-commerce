@@ -1,8 +1,10 @@
+import { UpdateVariantDTO } from './../dto/UpdateVariant';
 import { UpdateProductDTO } from './../dto/UpdateProduct.dto';
 import { Types } from 'mongoose';
 import { AddProductDTO } from './../dto/AddProduct.dto';
 import { Injectable } from "@nestjs/common";
 import { ProductEntity } from '../entity/AddProduct.entity';
+import { VariantEntity } from '../entity';
 
 @Injectable()
 export class ProductFactory 
@@ -81,4 +83,22 @@ UpdateProduct(updateProductDTO: UpdateProductDTO)
   return product;
 }
 
+UpdateVariant(updateVariantDTO:UpdateVariantDTO,OldStock:number)
+{
+  const variant = new VariantEntity()
+  if(updateVariantDTO.VariantStock)
+  {
+   variant.VariantStock=updateVariantDTO.VariantStock+OldStock
+  }
+  if(updateVariantDTO.Variantname)
+  {
+    variant.Variantname = updateVariantDTO.Variantname
+  }
+  if(updateVariantDTO.Variantstatus)
+  {
+    variant.Variantstatus = updateVariantDTO.Variantstatus
+  }
+
+  return variant 
+}
 }

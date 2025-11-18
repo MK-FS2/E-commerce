@@ -6,6 +6,7 @@ import { Types } from 'mongoose';
 import { AuthGuard, RoleGuard } from '@Sahred/Guards';
 import { ValidMongoID } from '@Sahred/Pipes';
 import { UpdateProductDTO } from './dto/UpdateProduct.dto';
+import { UpdateVariantDTO } from './dto/UpdateVariant';
 
 
 @Controller('product')
@@ -44,4 +45,14 @@ const Result = await this.productService.UpdateProduct(updateProductDTO,UserID,P
 if(Result==true)
  return{ message: `product updated successfully`, status: 200};
 }
+
+
+@Put("updatevariant/:ProductID/:VariantID")
+async UpdateVariant(@Body() updateVariantDTO:UpdateVariantDTO, @UserData("_id") UserID:Types.ObjectId,@Param("VariantID") VariantID:Types.ObjectId,@Param("ProductID") ProductID:Types.ObjectId)
+{
+const Result = await this.productService.UpdateVariant(updateVariantDTO,UserID,VariantID,ProductID)
+ if(Result == true)
+ return{ message: `variant updated successfully`, status: 200};
+}
+
 }

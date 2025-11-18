@@ -1,5 +1,5 @@
 
-import { Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotAcceptableException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { AddProductDTO } from './dto';
 import { Types } from 'mongoose';
 import { ProductFactory } from './factory';
@@ -7,6 +7,7 @@ import { BrandRepository } from '@Models/Brands';
 import { CategoryRepository } from '@Models/Categories';
 import { ProductRepository } from '@Models/Product';
 import { UpdateProductDTO } from './dto/UpdateProduct.dto';
+import { UpdateVariantDTO } from './dto/UpdateVariant';
 
 @Injectable()
 export class ProductService 
@@ -102,6 +103,84 @@ async UpdateProduct(updateProductDTO:UpdateProductDTO,UserID:Types.ObjectId,Prod
   throw new InternalServerErrorException()
  }
  return true
+}
+
+async UpdateVariant(updateVariantDTO:UpdateVariantDTO,UserID:Types.ObjectId,VariantID:Types.ObjectId,ProductID:Types.ObjectId) 
+{
+  if(!updateVariantDTO.Variantname && !updateVariantDTO.VariantStock &&! updateVariantDTO.Variantstatus)
+  {
+  throw new BadRequestException("1 feild should be provided atleast")
+  }
+  const TargetExist = await this.productRepository.FindOne({$and:[{_id:ProductID},{$or:[{"Variants._id":VariantID},{"Variants.SubVariants._id":VariantID}]}]},{Variants:1,_id:0})
+
+  if (!TargetExist) throw new NotAcceptableException("No variant found");
+    
+  let OldStock:number = 0
+
+  // i cant make a complex query that return the target despite the layer and return its stock so i made this
+  if (updateVariantDTO.VariantStock) 
+  {
+  for (const target of TargetExist.Variants) 
+  {
+    if (target._id?.equals(VariantID)) 
+    {
+      OldStock = target.VariantStock;
+      break;
+    }
+
+    if (target.SubVariants?.length) 
+    {
+      for (const subVariant of target.SubVariants) 
+      {
+        if (subVariant._id?.equals(VariantID)) 
+        {
+          OldStock = subVariant.VariantStock;
+          break;
+        }
+      }
+      if (OldStock !== undefined) break;
+    }
+  }
+}
+
+const ConstructedProduct = this.productFactor.UpdateVariant(updateVariantDTO,OldStock)
+
+const Result1 = await this.productRepository.UpdateOne({ _id: ProductID, "Variants._id": VariantID },
+  {
+    $set: {
+      "Variants.$.Variantname": ConstructedProduct.Variantname,
+      "Variants.$.VariantStock": ConstructedProduct.VariantStock,
+      "Variants.$.Variantstatus": ConstructedProduct.Variantstatus,
+    }
+  }
+);
+
+if(!Result1) 
+{
+const Result2 = await this.productRepository.UpdateOne(
+  { _id: ProductID },
+  {
+    $set: 
+    {
+      "Variants.$[v].SubVariants.$[sv].Variantname": ConstructedProduct.Variantname,
+      "Variants.$[v].SubVariants.$[sv].VariantStock": ConstructedProduct.VariantStock,
+      "Variants.$[v].SubVariants.$[sv].Variantstatus": ConstructedProduct.Variantstatus,
+    }
+  },
+  {
+    arrayFilters: 
+    [
+      {"v.SubVariants._id":VariantID},
+      {"sv._id": VariantID}
+    ]
+  }
+);
+if(!Result2)
+{
+  throw new InternalServerErrorException()
+}
+}
+return true
 }
 
 }

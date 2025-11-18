@@ -25,6 +25,7 @@ Rating:number
 @Schema()
 export class BaseVariant 
 {
+    readonly _id?:Types.ObjectId
     @Prop({type:SchemaTypes.Mixed, required:true})
     Variantname:string|number
 
@@ -51,6 +52,7 @@ export class BaseVariant
 @Schema()
 export class Variants 
 {
+    readonly _id?:Types.ObjectId
     @Prop({type:SchemaTypes.Mixed, required:true})
     Variantname:string|number
     

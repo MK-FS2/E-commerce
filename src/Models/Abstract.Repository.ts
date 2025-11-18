@@ -52,9 +52,9 @@ async Find(Filter:RootFilterQuery<T>,Projection?:ProjectionType<T>,Options?:Quer
     }
 }
 
-async UpdateOne(Filter:RootFilterQuery<T>,Updateoptions:UpdateQuery<T>):Promise<boolean>
+async UpdateOne(Filter:RootFilterQuery<T>,Updateoptions:UpdateQuery<T>,Options?: Record<string, any>):Promise<boolean>
 {
-    const UpdateResult = await this.model.updateOne(Filter,Updateoptions)
+    const UpdateResult = await this.model.updateOne(Filter,Updateoptions,Options)
 
     if(UpdateResult.modifiedCount == 0)
     {

@@ -75,6 +75,7 @@ export class BrandService
 {
     const Skip = Math.ceil((Page - 1) * Limit);
     const Brands = await this.brandRepository.GetAll({},{},{skip: Skip,limit:Limit,populate: [{ path: "CreatedBy", select: "_id FirstName LastName Email" }, { path: "UpdatedBy", select: "_id FirstName LastName Email" }, { path: "CategoryID", select: "_id CategoryName Slug" }]});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return Brands;
 }
 
