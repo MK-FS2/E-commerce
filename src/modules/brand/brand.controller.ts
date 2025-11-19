@@ -1,4 +1,4 @@
-import { Body, Controller, DefaultValuePipe, Get, Param, ParseIntPipe, Post, Put, Query, UseGuards} from '@nestjs/common';
+import { Body, Controller, DefaultValuePipe, Delete, Get, Param, ParseIntPipe, Post, Put, Query, UseGuards} from '@nestjs/common';
 import { BrandService } from './brand.service';
 import { Types } from 'mongoose';
 import { CreateBrandDTO, UpdateBrandDTO } from './dto';
@@ -47,4 +47,11 @@ export class BrandController
   return {Data:Data,status: 200}
  }
 
+ @Delete("deletebrand/:BrandID")
+ async Deletebrand(@Param("BrandID",ValidMongoID) BrandID:Types.ObjectId)
+ {
+ const Result = await this.brandService.DeletBrand(BrandID)
+ if(Result == true)
+ return{message: "Brand deleted successfully", status: 200}
+ }
 }

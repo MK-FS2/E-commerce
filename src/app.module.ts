@@ -16,8 +16,8 @@ import { ProductModule } from './modules/product/product.module';
     MongooseModule.forRootAsync({ useFactory: () => ({ uri: process.env.URL as string }) }),
     CommonModels,
     AuthModule,
-    CategoriesModule,
     BrandModule,
+    CategoriesModule,
     ProductModule
   ]
 })

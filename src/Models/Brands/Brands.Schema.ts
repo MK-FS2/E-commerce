@@ -1,6 +1,6 @@
 import { FileSchema, FileType } from "@Models/Shared";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import {  SchemaTypes, Types } from "mongoose";
+import { SchemaTypes, Types } from "mongoose";
 
 @Schema({timestamps:true})
 export class Brand

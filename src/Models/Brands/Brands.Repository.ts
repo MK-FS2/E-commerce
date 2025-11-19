@@ -1,9 +1,9 @@
 import AbstractRepository from "@Models/Abstract.Repository";
-import { Brand } from "./Brands.Schema";
 import { InjectModel } from "@nestjs/mongoose";
 import {  Model, ProjectionType, QueryOptions, RootFilterQuery} from "mongoose";
-import { Category } from "@Models/Categories";
+import { Category } from "./../Categories/Categories.Schema"
 import slugify from "slugify";
+import { Brand } from "./Brands.Schema";
 
 
 
@@ -55,5 +55,7 @@ async GetOne(Filter: RootFilterQuery<Brand>,Projection?: ProjectionType<Brand>,O
   (Doc as any).Slug = fullSlug;
   return Doc;
 }
+
+
 
 }

@@ -114,4 +114,21 @@ async GetOneCategory(CategoryID: Types.ObjectId)
     return category
 }
 
+async DeleteCategory(CategoryID:Types.ObjectId)
+{
+ const CategoryExist = await this.categoryRepository.FindOne({_id:CategoryID})
+ if(!CategoryExist)
+ {
+    throw new NotFoundException("No category found")
+ }
+ 
+
+ const Result = await this.categoryRepository.DeleteOnecategory(CategoryID)
+ if(Result === false)
+ {
+    throw new InternalServerErrorException()
+ }
+ return true
+}
+
 }

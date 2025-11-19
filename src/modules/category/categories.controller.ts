@@ -1,5 +1,5 @@
 import { UpdateCategoryDTO } from './dto/Updatecategory.dto';
-import { Body, Controller, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { CategoryDTO } from './dto';
 import { PublicBypass, Roles, UserData } from '@Sahred/Decorators';
@@ -50,4 +50,13 @@ export class CategoriesController
   const Result = await this.categoriesService.GetOneCategory(CategoryID)
    return{Data:Result, status: 200}
   }
+
+  @Delete("deletecategory/:CategoryID")
+ async DeleteCategory(@Param("CategoryID",ValidMongoID)CategoryID:Types.ObjectId)
+ {
+ const Reslt = await this.categoriesService.DeleteCategory(CategoryID)
+ if(Reslt == true)
+  return{message:"Category deleted succsessfully", status: 200}
+ }
+
 }

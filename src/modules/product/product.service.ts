@@ -183,4 +183,45 @@ if(!Result2)
 return true
 }
 
+async DeleteProduct(ProductID:Types.ObjectId,UserID:Types.ObjectId)
+{
+const ProductExist = await this.productRepository.FindOne({_id:ProductID},{CreatedBy:1})
+if(!ProductExist)
+{
+  throw new NotFoundException("No product found")
+}
+if(!ProductExist.CreatedBy.equals(UserID))
+{
+  throw new UnauthorizedException("You are not the owner")
+}
+
+const DeletionResult = await this.productRepository.DeleteOne({_id:ProductID})
+if(!DeletionResult)
+{
+  throw new InternalServerErrorException()
+}
+return true
+}
+
+async DeleteVariant(VariantID:Types.ObjectId,ProductID:Types.ObjectId,UserID:Types.ObjectId)
+{
+const VariantExist = await this.productRepository.FindOne({$and:[{_id:ProductID},{"Variants._id":VariantID}]},{CreatedBy:1})
+if(!VariantExist)
+{
+  throw new NotFoundException("varinat dont exist ")
+}
+
+if(!VariantExist.CreatedBy.equals(UserID))
+{
+  throw new  UnauthorizedException("You are not the owner")
+}
+
+const ResultVariant = await this.productRepository.UpdateOne({ _id: ProductID },{ $pull: { Variants: {_id:VariantID}}});
+if(!ResultVariant)
+{
+  throw new InternalServerErrorException()
+}
+
+return true
+}
 }

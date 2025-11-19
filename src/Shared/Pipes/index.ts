@@ -1,2 +1,3 @@
-export * from "./Email.Validation.pipes"
-export * from "./MongoID.validation.pipes"
+export * from "./Email.Validation.pipe"
+export * from "./MongoID.validation.pipe"
+export * from "./Query.valdidation.pipe"

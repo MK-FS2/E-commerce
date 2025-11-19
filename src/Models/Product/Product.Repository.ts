@@ -2,7 +2,7 @@ import { BrandRepository } from './../Brands/Brands.Repository';
 import { InjectModel } from "@nestjs/mongoose";
 import { Product } from "./Product.Schema";
 import AbstractRepository from "@Models/Abstract.Repository";
-import {Model, ProjectionType, QueryOptions, RootFilterQuery } from "mongoose";
+import {Model, ProjectionType, QueryOptions, RootFilterQuery, Types } from "mongoose";
 import slugify from "slugify";
 
 
@@ -53,5 +53,12 @@ async GetMany(Filter: RootFilterQuery<Product>,Projection?: ProjectionType<Produ
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return results;
 }
+
+async DeleteManyproducts(BrandID:Types.ObjectId)
+{
+ await this.ProductModel.deleteMany({Brand:BrandID})
+}
+
+
 
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { AddProductDTO } from './dto';
 import { Roles, UserData } from '@Sahred/Decorators';
@@ -53,6 +53,22 @@ async UpdateVariant(@Body() updateVariantDTO:UpdateVariantDTO, @UserData("_id") 
 const Result = await this.productService.UpdateVariant(updateVariantDTO,UserID,VariantID,ProductID)
  if(Result == true)
  return{ message: `variant updated successfully`, status: 200};
+}
+
+@Delete("delectproduct/:ProductID")
+async DeletProduct(@Param("ProductID",ValidMongoID) ProductID:Types.ObjectId,@UserData("_id")UserID:Types.ObjectId)
+{
+const Result = await this.productService.DeleteProduct(ProductID,UserID)
+ if(Result == true)
+ return{ message: `Product deleted successfully`, status: 200};
+}
+
+@Delete("delectvariant/:ProductID/:VariantID")
+async DeleteVariant(@Param("ProductID",ValidMongoID) ProductID:Types.ObjectId,@Param("VariantID",ValidMongoID) VariantID:Types.ObjectId,@UserData("_id") UserID:Types.ObjectId)
+{
+const Result = await this.productService.DeleteVariant(VariantID,ProductID,UserID)
+ if(Result == true)
+return{ message:`Varinat deleted successfully`, status: 200};
 }
 
 }

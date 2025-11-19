@@ -1,6 +1,7 @@
+import { ProductRepository } from '@Models/Product';
 import { BrandFcatory } from './factory/index';
 import { BrandRepository } from '@Models/Brands';
-import { ConflictException, Injectable, NotFoundException,BadRequestException, InternalServerErrorException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException,BadRequestException, InternalServerErrorException} from '@nestjs/common';
 import { Types } from 'mongoose';
 import { CreateBrandDTO, UpdateBrandDTO } from './dto';
 import { CategoryRepository } from '@Models/Categories';
@@ -9,7 +10,7 @@ import { CategoryRepository } from '@Models/Categories';
 @Injectable()
 export class BrandService 
 {
- constructor(private readonly brandRepository:BrandRepository,private readonly categoryRepository:CategoryRepository,private readonly brandFcatory:BrandFcatory){}
+ constructor(private readonly brandRepository:BrandRepository,private readonly categoryRepository:CategoryRepository,private readonly brandFcatory:BrandFcatory,private readonly productRepository:ProductRepository){}
   
 
  async AddBrand(createBrandDTO:CreateBrandDTO,UserID:Types.ObjectId,CategoryID:Types.ObjectId):Promise<boolean>
@@ -35,7 +36,6 @@ export class BrandService
 
   return true
  }
-
 
  async UpdateBrand(updateBrandDTO:UpdateBrandDTO,BrandID:Types.ObjectId,UserID:Types.ObjectId)
  {
@@ -89,5 +89,19 @@ export class BrandService
   return BrandExist
  }
 
-
+ async DeletBrand(BrandID:Types.ObjectId)
+ {
+  const BrandExist = await this.brandRepository.FindOne({_id:BrandID})
+  if(!BrandExist)
+  {
+    throw new NotFoundException("No brand found")
+  }
+  const Result = await this.brandRepository.DeleteOne({_id:BrandID})
+   if(!Result)
+   {
+    throw new InternalServerErrorException()
+   }
+   await this.productRepository.DeleteManyproducts(BrandID)
+   return true
+ }
 }
