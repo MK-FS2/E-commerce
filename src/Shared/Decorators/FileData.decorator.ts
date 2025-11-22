@@ -2,12 +2,18 @@ import { Filecount } from '@Sahred/Enums';
 
 import { BadGatewayException, createParamDecorator, ExecutionContext, InternalServerErrorException } from '@nestjs/common';
 
+interface FileDataOptions 
+{
+  filecount: Filecount;
+  optional: boolean;
+}
 
 export const FileData = createParamDecorator(
-  (filecount:Filecount,context:ExecutionContext) => 
+  (data:FileDataOptions,context:ExecutionContext) => 
   {
     try 
     {
+    const {filecount,optional} = data
     const req = context.switchToHttp().getRequest()
     let Target: Express.Multer.File | Express.Multer.File[]
 
@@ -15,6 +21,10 @@ export const FileData = createParamDecorator(
     {
     if(!req.file)
     {
+        if(optional)
+        {
+            return undefined
+        }
         throw new BadGatewayException("No file uploaded")
     }
     Target = req.file
@@ -24,6 +34,7 @@ export const FileData = createParamDecorator(
     {
     if(!req.files)
     {
+    if (optional) return undefined;
      throw new BadGatewayException("No file uploaded")
     }
     Target = req.files

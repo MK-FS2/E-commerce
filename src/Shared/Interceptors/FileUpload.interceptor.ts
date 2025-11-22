@@ -7,7 +7,7 @@ import { Request, Response } from 'express';
 
 @Injectable()
 export class FileInterceptor implements NestInterceptor {
-  constructor(private fileTypes: string[],private size: number,private UploadType: Filecount,private FieldName: string,) {}
+  constructor(private fileTypes: string[],private size: number,private UploadType: Filecount,private FieldName: string,private Optional:boolean) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> 
   {
@@ -30,12 +30,22 @@ export class FileInterceptor implements NestInterceptor {
 
         if (this.UploadType === Filecount.File && !req.file) 
         {
+          if(this.Optional)
+          {
+          observer.next();
+          observer.complete();
+          }
           observer.error(new InternalServerErrorException('No file uploaded'));
           return;
         }
 
         if (this.UploadType === Filecount.Files && (!req.files || (req.files as any[]).length === 0)) 
         {
+          if(this.Optional)
+          {
+          observer.next();
+          observer.complete();
+          }
           observer.error(new InternalServerErrorException('No files uploaded'));
           return;
         }

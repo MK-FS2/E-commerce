@@ -12,7 +12,7 @@ export class CategoriesService
 {
 constructor(private readonly categoryRepository:CategoryRepository,private readonly categoryFactory:CategoryFactory,private readonly uploadServices:UploadServices ){}
 
-async AddCategory(CategoryDTO:CategoryDTO,UserID:Types.ObjectId,File:Express.Multer.File)
+async AddCategory(CategoryDTO:CategoryDTO,UserID:Types.ObjectId,File:Express.Multer.File | undefined)
 {
 const CategoryExist = await this.categoryRepository.FindOne({CategoryName: { $regex: `^${CategoryDTO.CategoryName}$`, $options: 'i' }});
 if(CategoryExist)
@@ -31,13 +31,21 @@ const ConstructedCategory = this.categoryFactory.CreatCategory(CategoryDTO,UserI
 const Creationresult = await this.categoryRepository.CreatDocument(ConstructedCategory)
 if(!Creationresult)throw new InternalServerErrorException()
 
+if(File)
+{
 const folder = `${FolderTypes.App}/${FolderTypes.Categories}/${Creationresult._id.toString()}/${FolderTypes.Photos}`
 const Uploadresult = await this.uploadServices.uploadOne(File.path,folder)
 if(!Uploadresult)
 {
     throw new InternalServerErrorException(`Upload faild ${File.path}`)
 }
-await this.categoryRepository.UpdateOne({_id:Creationresult._id},{$set:{Image:Uploadresult}})
+const Updateresult = await this.categoryRepository.UpdateOne({_id:Creationresult._id},{$set:{Image:Uploadresult}})
+if(!Updateresult)
+{
+ await this.uploadServices.deleteFolder(folder)
+ throw new InternalServerErrorException("Upload faild C-UP")
+}
+}
 return true
 }
 

@@ -19,8 +19,8 @@ export class CategoriesController
   constructor(private readonly categoriesService:CategoriesService) {}
 
   @Post("/AddCategory")
-  @UseInterceptors(new FileInterceptor(FileTypes.Image,10,Filecount.File,"Image"))
-  async AddingCategory(@Body() CategoryDTO:CategoryDTO , @UserData("_id") userID:string,@FileData(Filecount.File) File:Express.Multer.File)
+  @UseInterceptors(new FileInterceptor(FileTypes.Image,10,Filecount.File,"Image",true))
+  async AddingCategory(@Body() CategoryDTO:CategoryDTO , @UserData("_id") userID:string,@FileData({filecount:Filecount.File,optional:true}) File:Express.Multer.File)
   {
     const UserID = new mongoose.Types.ObjectId(userID)
     const Result = await this.categoriesService.AddCategory(CategoryDTO,UserID,File)
@@ -49,7 +49,7 @@ export class CategoriesController
 
    @Get("/onecategory/:CategoryID")
    @PublicBypass()
-  //  i made ValidMongoID to make validation and transformtion
+
    async GetOnecategory(@Param("CategoryID",ValidMongoID) CategoryID:Types.ObjectId)
    {
   const Result = await this.categoriesService.GetOneCategory(CategoryID)
