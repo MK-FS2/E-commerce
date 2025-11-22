@@ -1,21 +1,27 @@
 
-
-export enum SpecialisationTypes 
+export const enum Filecount 
 {
-  ELECTRONICS = 1,
-  FASHION = 2,
-  BEAUTY = 3,
-  HOME_KITCHEN = 4,
-  SPORTS_OUTDOORS = 5,
-  BOOKS = 6,
-  TOYS = 7,
-  AUTOMOTIVE = 8,
-  GROCERY = 9,
-  HEALTH = 10,
-  PET_SUPPLIES = 11,
-  JEWELRY = 12,
-  MUSIC = 13,
-  OFFICE_SUPPLIES = 14,
-  PERSONAL_CARE = 15,
-  OTHER = 16
+  File = "File",
+  Files = "Files"
+}
+
+
+export const enum FolderTypes 
+{
+  App = "Ecommerce",
+  Users = "Users",              
+  Products = "Products",        
+  ProductVariants = "ProductVariants",
+  Categories = "Categories",    
+  Orders = "Orders",           
+  Invoices = "Invoices",        
+  Reviews = "Reviews",          
+  Promotions = "Promotions",    
+  Brands = "Brands",           
+  Shipping = "Shipping",        
+  Returns = "Returns",          
+  Coupons = "Coupons",          
+  Avatars = "Avatars",          
+  Documents = "Documents",     
+  Photos = "Photos",            
 }

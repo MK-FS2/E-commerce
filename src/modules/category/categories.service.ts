@@ -3,14 +3,16 @@ import { CategoryDTO, UpdateCategoryDTO } from './dto';
 import { Category, CategoryRepository } from '@Models/Categories';
 import { CategoryFactory } from './factory';
 import { HydratedDocument, Types } from 'mongoose';
+import { UploadServices } from '@Sahred/Upload';
+import { FolderTypes } from '@Sahred/Enums';
 
 
 @Injectable()
 export class CategoriesService 
 {
-constructor(private readonly categoryRepository:CategoryRepository,private readonly categoryFactory:CategoryFactory){}
+constructor(private readonly categoryRepository:CategoryRepository,private readonly categoryFactory:CategoryFactory,private readonly uploadServices:UploadServices ){}
 
-async AddCategory(CategoryDTO:CategoryDTO,UserID:Types.ObjectId)
+async AddCategory(CategoryDTO:CategoryDTO,UserID:Types.ObjectId,File:Express.Multer.File)
 {
 const CategoryExist = await this.categoryRepository.FindOne({CategoryName: { $regex: `^${CategoryDTO.CategoryName}$`, $options: 'i' }});
 if(CategoryExist)
@@ -28,8 +30,18 @@ if(CategoryDTO.ParentCategoryID)
 const ConstructedCategory = this.categoryFactory.CreatCategory(CategoryDTO,UserID)
 const Creationresult = await this.categoryRepository.CreatDocument(ConstructedCategory)
 if(!Creationresult)throw new InternalServerErrorException()
+
+const folder = `${FolderTypes.App}/${FolderTypes.Categories}/${Creationresult._id.toString()}/${FolderTypes.Photos}`
+const Uploadresult = await this.uploadServices.uploadOne(File.path,folder)
+if(!Uploadresult)
+{
+    throw new InternalServerErrorException(`Upload faild ${File.path}`)
+}
+await this.categoryRepository.UpdateOne({_id:Creationresult._id},{$set:{Image:Uploadresult}})
 return true
 }
+
+
 
 async UpdateCategory(updateCategoryDTO: UpdateCategoryDTO, UserID: Types.ObjectId, CategoryID: Types.ObjectId) {
     const { CategoryName, ParentCategoryID ,Status} = updateCategoryDTO;;
