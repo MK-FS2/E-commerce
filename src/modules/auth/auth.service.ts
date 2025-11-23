@@ -1,3 +1,4 @@
+import { CartRepository } from './../../Models/Cart/cart.Repository';
 import { BaseUserRepository } from './../../Models/Users/common/BaseUserRepository';
 import { JwtService } from '@nestjs/jwt';
 import { BadRequestException, ConflictException, HttpException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
@@ -20,7 +21,8 @@ constructor(private readonly CustomerFactory:CustomerFactory,
   private readonly sellerFactory:SellerFactory,
   private readonly sellerRepository:SellerRepository ,
   private readonly jwtService:JwtService,
-  private readonly baseUserRepository:BaseUserRepository
+  private readonly baseUserRepository:BaseUserRepository,
+  private readonly cartRepository:CartRepository
   ){}
 
   async SignupCustomer(customerDTO:CustomerDTO)
@@ -88,30 +90,51 @@ constructor(private readonly CustomerFactory:CustomerFactory,
     }
   }
 
-async VerifyEmail(verificationDTO:VerificationDTO) 
- {
-  const UserExist = await this.baseUserRepository.FindOne({Email:verificationDTO.Email},{OTP:1,OTPExpirationTime:1})
+async VerifyEmail(verificationDTO: VerificationDTO): Promise<boolean> 
+{
 
-   if(!UserExist)
-   {
-    throw new UnauthorizedException("Invalid Email")
-   }
-   if(UserExist.OTP != verificationDTO.OTP)
-   {
-    throw new UnauthorizedException("Invalid OTP")
-   }
+  const user = await this.baseUserRepository.FindOne({ Email: verificationDTO.Email },{ OTP: 1, OTPExpirationTime: 1, isVerified: 1, Role: 1 });
 
-   if(UserExist.OTPExpirationTime as unknown as Date <= new Date()) 
-   {
-   throw new UnauthorizedException('OTP timed out');
-   }
+  if (!user) 
+  {
+    throw new UnauthorizedException("Invalid Email");
+  }
 
- const RemovingResult = await this.baseUserRepository.UpdateOne({ Email: verificationDTO.Email },{$unset:{OTP:'',OTPExpirationTime:''}});
- if(!RemovingResult)
- {
-  throw new InternalServerErrorException()
- }
- return true
+  if (user.isVerified) 
+  {
+    throw new BadRequestException("Already verified");
+  }
+
+  if (user.OTP !== verificationDTO.OTP) 
+  {
+    throw new UnauthorizedException("Invalid OTP");
+  }
+
+  if (!user.OTPExpirationTime || user.OTPExpirationTime <= new Date()) 
+  {
+    throw new UnauthorizedException("OTP timed out");
+  }
+
+  if (user.Role === "Customer") 
+  {
+    const cartExist = await this.cartRepository.FindOne({UserID:user._id})
+    if(!cartExist)
+    {
+    const cart = await this.cartRepository.CreateCart(user._id);
+    if (!cart) {
+      throw new InternalServerErrorException("Failed to create cart");
+    }
+    }
+  }
+
+  const updated = await this.baseUserRepository.UpdateOne({ Email: verificationDTO.Email },{ $unset: { OTP: 1, OTPExpirationTime: 1 }, $set: { isVerified: true }});
+  if (!updated) 
+  {
+    await this.cartRepository.DeleteOne({UserID:user._id})
+    throw new InternalServerErrorException("Failed to update user");
+  }
+
+  return true;
 }
   
 async ResendOTP(Email:string)
@@ -156,7 +179,6 @@ async ResetPassword(resetPasswordDTO:ResetPasswordDTO)
  {
     throw new BadRequestException("OTP timed out")
  }
- console.log(resetPasswordDTO.Password)
  const Hashedpassword = bcrypt.hashSync(resetPasswordDTO.Password,10)
 
  const UpdatePasswordresult = await this.baseUserRepository.UpdateOne({ Email: resetPasswordDTO.Email },{$set: { Password: Hashedpassword },$unset: { OTP: "", OTPExpire: "" }});
@@ -260,6 +282,6 @@ async loginWithGoogle(OAuthToken: string)
     const accesstoken = this.jwtService.sign(payload, {secret: process.env.AcessToken,expiresIn: '7d'});
     const refreshtoken = this.jwtService.sign(payload, {secret: process.env.RefreshToken,expiresIn: '30d'});
     return { accesstoken,refreshtoken};
-  }
+}
 
 }

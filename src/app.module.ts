@@ -6,6 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { CommonModels } from '@Sahred/Modules';
 import { BrandModule } from './modules/brand/brand.module';
 import { ProductModule } from './modules/product/product.module';
+import { CartModule } from './modules/cart/cart.module';
 
 
 
@@ -18,7 +19,8 @@ import { ProductModule } from './modules/product/product.module';
     AuthModule,
     BrandModule,
     CategoriesModule,
-    ProductModule
+    ProductModule,
+    CartModule
   ]
 })
 export class AppModule {}
