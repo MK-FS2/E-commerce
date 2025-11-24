@@ -9,6 +9,10 @@ import { ProductRepository } from '@Models/Product';
 import { UpdateProductDTO } from './dto/UpdateProduct.dto';
 import { UpdateVariantDTO } from './dto/UpdateVariant';
 
+
+//  refactor the varinat and subvarinat so a varinat reflect the subvarinats not a separate entity
+
+
 @Injectable()
 export class ProductService 
 {
