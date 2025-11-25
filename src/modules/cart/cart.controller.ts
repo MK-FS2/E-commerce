@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { CartService } from './cart.service';
 import { AuthGuard, RoleGuard } from '@Sahred/Guards';
 import { Roles, UserData } from '@Sahred/Decorators';
@@ -20,6 +20,23 @@ export class CartController
   if(Result==true)
   return{message: "Cart updated successfully", status: 200}
  }
+
+@Put("reduceiteam/:ProductID/:VariantID")
+async Reduceiteam(@UserData("_id")UserID:Types.ObjectId,@Param("ProductID")ProductID:Types.ObjectId,@Param("VariantID")VariantID:Types.ObjectId)
+{
+const Result = await this.cartService.Reducefromcart(UserID,ProductID,VariantID)
+if(Result == true)
+return{message: "Cart updated successfully", status: 200}
+}
+
+@Delete("removeiteam/:ProductID/:VariantID")
+async RemoveItem(@UserData("_id")UserID:Types.ObjectId,@Param("ProductID")ProductID:Types.ObjectId,@Param("VariantID")VariantID:Types.ObjectId)
+{
+const Result = await this.cartService.RemoveItem(UserID,ProductID,VariantID)
+if(Result == true)
+return{message: "Cart updated successfully", status: 200}
+}
+
 
 
 }

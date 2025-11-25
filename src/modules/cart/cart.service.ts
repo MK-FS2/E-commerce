@@ -2,7 +2,7 @@ import { CartFactory } from './factory/index';
 import { BaseVariant } from '@Models/Product';
 import { ProductRepository, Variants } from '@Models/Product';
 import { CartRepository } from './../../Models/Cart/cart.Repository';
-import { Injectable, InternalServerErrorException, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException, BadRequestException} from '@nestjs/common';
 import { Types } from 'mongoose';
 import { AddTocartDTO } from './dto/Addtocart.dto';
 import { CartProduct } from '@Models/Cart';
@@ -62,7 +62,6 @@ for(const poduct of UserCartExist.CartProducts)
  if(poduct.VariantID.equals(VariantID))
  {
     TargetCartProduct = poduct
-    console.log(poduct)
     break
  }
  else 
@@ -111,6 +110,56 @@ else
     return true
 }
 
+async Reducefromcart(UserID:Types.ObjectId,ProductID:Types.ObjectId,VariantID:Types.ObjectId,)
+{
 
+    const Cart = await this.cartRepository.FindOne({UserID:UserID})
+    if(!Cart)
+    {
+        throw new InternalServerErrorException()
+    }
+     const ProductExist = await this.cartRepository.FindOne({ UserID, CartProducts: { $elemMatch: { ProductID:ProductID,VariantID:VariantID}}},{"CartProducts.$": 1 });
+    if(!ProductExist)
+    {
+        throw new NotFoundException("No product found")
+    }
+
+
+   const OldQuantity = ProductExist.CartProducts![0].Quantity
+   if(OldQuantity == 1)
+   {
+    const Updateresult = await this.cartRepository.UpdateOne({UserID},{$pull:{CartProducts:{ProductID,VariantID}}})
+    if(!Updateresult)
+    {
+        throw new InternalServerErrorException()
+    }
+   }
+   else
+   {
+    const NewQuantity = OldQuantity-1
+     const Updateresult = await this.cartRepository.UpdateOne({ UserID: UserID,"CartProducts.VariantID":VariantID},{$set:{"CartProducts.$.Quantity":NewQuantity}});
+     if(!Updateresult)
+     {
+        throw new InternalServerErrorException()
+     }
+   }
+  return true
+}
+
+
+async RemoveItem(UserID:Types.ObjectId,ProductID:Types.ObjectId,VariantID:Types.ObjectId)
+{
+const ProductExist = await this.cartRepository.FindOne({ UserID, CartProducts:{$elemMatch:{ProductID:ProductID,VariantID:VariantID}}},{"CartProducts.$": 1 });
+if(!ProductExist)
+{
+    throw new NotFoundException("No product found")
+}
+const RemovingResult = await this.cartRepository.UpdateOne({UserID},{$pull:{CartProducts:{ProductID,VariantID}}})
+if(!RemovingResult)
+{
+    throw new InternalServerErrorException()
+}
+return true
+}
 
 }
