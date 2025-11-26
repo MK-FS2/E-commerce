@@ -10,6 +10,7 @@ import { ProductRepository } from '@Models/Product';
 import { UpdateProductDTO } from './dto/UpdateProduct.dto';
 import { UpdateVariantDTO } from './dto/UpdateVariant';
 import { FolderTypes } from '@Sahred/Enums';
+import { UpdateImageDTO } from './dto/UpdateImage.dto';
 
 
 //  refactor the varinat and subvarinat so a varinat reflect the subvarinats not a separate entity
@@ -256,4 +257,65 @@ if(!ResultVariant)
 
 return true
 }
+
+
+async GetAllownedProducts(UserID:Types.ObjectId,Page:number,Limit:number)
+{
+const Skip = Math.ceil((Page-1)*Limit)
+
+
+const Products = await this.productRepository.Find({CreatedBy:UserID},{},{skip:Skip,limit:Limit})
+return Products
+}
+
+
+async UpdateProductImage(UserID:Types.ObjectId,updateImageDTO:UpdateImageDTO,ProductID:Types.ObjectId,File:Express.Multer.File)
+{
+
+  const product = await this.productRepository.FindOne({CreatedBy:UserID,_id:ProductID,ProductImages:{$elemMatch:{ID:updateImageDTO.ID}}},{"ProductImages.$":1})
+  if(!product)
+  {
+   throw new NotFoundException("No product found")
+  }
+
+  const Folder = `${FolderTypes.App}/${FolderTypes.Products}/${ProductID.toString()}/${FolderTypes.Photos}`
+  const NewFileResult = await this.uploadServices.ReplaceFile(File.path,updateImageDTO.ID,Folder)
+  if(!NewFileResult)
+  {
+    throw new InternalServerErrorException("Update failed xc")
+  }
+  
+  const updateProduct = await this.productRepository.UpdateOne({ _id:ProductID,CreatedBy:UserID,"ProductImages.ID": updateImageDTO.ID },{ $set: { "ProductImages.$": NewFileResult }});
+  if(!updateProduct)
+  {
+    throw new InternalServerErrorException("Update failed vv")
+  }
+  return true
+}
+
+
+async DeleteProductImage(updateImageDTO:UpdateImageDTO,UserID:Types.ObjectId,ProductID:Types.ObjectId)
+{
+  console.log(`${updateImageDTO.ID}`)
+const product = await this.productRepository.FindOne({_id:ProductID,CreatedBy:UserID,ProductImages:{$elemMatch:{ID:updateImageDTO.ID}}},{"ProductImages.$":1});
+if(!product)
+{
+  throw new NotFoundException("No image found")
+}
+
+const Result = await this.uploadServices.DeleteFile(updateImageDTO.ID)
+if(!Result)
+{
+  throw new InternalServerErrorException("Error deleting image")
+}
+
+const UpdateResult = await this.productRepository.UpdateOne({_id:ProductID,CreatedBy:UserID,ProductImages:{$elemMatch:{ID:updateImageDTO.ID}}},{$pull:{ProductImages:{ID:updateImageDTO.ID}}})
+if(!UpdateResult)
+{
+    throw new InternalServerErrorException("Error Updating")
+}
+
+return true
+}
+
 }

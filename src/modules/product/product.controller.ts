@@ -10,6 +10,8 @@ import { Filecount } from '@Sahred/Enums';
 import { FileInterceptor } from '@Sahred/Interceptors';
 import { FileTypes } from '@Sahred/Interfaces';
 import { AddProductDTO } from './dto';
+import { UpdateImageDTO } from './dto/UpdateImage.dto';
+
 
 
 
@@ -80,6 +82,30 @@ async DeleteVariant(@Param("ProductID",ValidMongoID) ProductID:Types.ObjectId,@P
 const Result = await this.productService.DeleteVariant(VariantID,ProductID,UserID)
  if(Result == true)
 return{ message:`Varinat deleted successfully`, status: 200};
+}
+
+@Put("updateproductimage/:ProductID")
+@UseInterceptors(new FileInterceptor(FileTypes.Image,10,Filecount.File,"Image",false))
+async UpdateproductImage(@Body()updateImageDTO:UpdateImageDTO,@Param("ProductID",ValidMongoID)ProductID:Types.ObjectId,@UserData("_id")UserID:Types.ObjectId,@FileData({filecount:Filecount.File,optional:false}) File:Express.Multer.File)
+{
+const Result = await this.productService.UpdateProductImage(UserID,updateImageDTO,ProductID,File)
+if(Result == true)
+return{ message: `Image updated successfully`, status: 200};
+}
+
+@Get("getpostedproducts")
+async GetAllownedProducts(@UserData("_id")UserID:Types.ObjectId,@Query("Page",ParseIntPipe)Page:number=1,@Query("Limit",ParseIntPipe)Limit:number=10)
+{
+const Data = await this.productService.GetAllownedProducts(UserID,Page,Limit)
+return {Data:Data ,status:200}
+}
+
+@Delete("deletproductimage/:ProductID")
+async DeleteProductImage(@Param("ProductID",ValidMongoID)ProductID:Types.ObjectId,@UserData("_id")UserID:Types.ObjectId,@Body()updateImageDTO:UpdateImageDTO)
+{
+const Result = await this.productService.DeleteProductImage(updateImageDTO,UserID,ProductID)
+if(Result == true)
+return{ message: `Image updated successfully`, status: 200};
 }
 
 }

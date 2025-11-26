@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { fileformat } from "@Sahred/Interfaces";
 import { v2 as cloudinary, UploadApiResponse } from "cloudinary";
 import dotenv from "dotenv"
@@ -44,7 +44,7 @@ async deleteFolder(folder:string): Promise<boolean>
  }
 
   // Upload a single file
-  async uploadOne(filePath: string, folder: string): Promise<fileformat|null> 
+async uploadOne(filePath: string, folder: string): Promise<fileformat|null> 
   {
     try 
     {
@@ -57,7 +57,7 @@ async deleteFolder(folder:string): Promise<boolean>
       return null
     }
    
-  }
+}
 
  async uploadMany(filePaths: string[], folder: string): Promise<fileformat[]|null> 
  {
@@ -79,11 +79,39 @@ async deleteFolder(folder:string): Promise<boolean>
   }
 }
 
-
-  async DeleteFile(publicId: string): Promise<boolean> 
-  {
+async DeleteFile(publicId: string): Promise<boolean> 
+{
     const res = await cloudinary.uploader.destroy(publicId);
     return res.result === "ok";
+}
+
+async ReplaceFile(newfilebath:string,oldfileid:string,folder:string) 
+{
+  try 
+  {
+    const UploadNew = await this.uploadOne(newfilebath,folder)
+    if (!UploadNew)
+    {
+      throw new InternalServerErrorException("Replacment failed 1")
+    }
+
+    const DeleteOld = await this.DeleteFile(oldfileid)
+    if (!DeleteOld)
+    {
+      await this.DeleteFile(UploadNew.ID)
+      throw new InternalServerErrorException(`Replacment failed 2 ${oldfileid}`)
+    }
+
+    return UploadNew
   }
+  catch(err)
+  {
+    console.log(err.message)
+    return null
+  }
+
+
+
+}
 
 }
