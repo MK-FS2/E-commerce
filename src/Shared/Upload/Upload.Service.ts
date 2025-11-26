@@ -59,16 +59,24 @@ async deleteFolder(folder:string): Promise<boolean>
    
   }
 
- async uploadMany(filePaths: string[], folder: string): Promise<fileformat[]> 
+ async uploadMany(filePaths: string[], folder: string): Promise<fileformat[]|null> 
  {
+  try 
+  {
   const results: fileformat[] = [];
   for (const path of filePaths) 
- {
+  {
     const uploadResult = await cloudinary.uploader.upload(path,{folder});
     const mapped = this.mapCloudinaryToFileFormat(uploadResult);
     results.push(mapped);
   }
   return results;
+  }
+  catch(err)
+  {
+  console.log(err)
+  return null
+  }
 }
 
 

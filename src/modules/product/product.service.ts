@@ -1,3 +1,4 @@
+import { UploadServices } from './../../Shared/Upload/Upload.Service';
 
 import { BadRequestException, Injectable, InternalServerErrorException, NotAcceptableException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { AddProductDTO } from './dto';
@@ -8,6 +9,7 @@ import { CategoryRepository } from '@Models/Categories';
 import { ProductRepository } from '@Models/Product';
 import { UpdateProductDTO } from './dto/UpdateProduct.dto';
 import { UpdateVariantDTO } from './dto/UpdateVariant';
+import { FolderTypes } from '@Sahred/Enums';
 
 
 //  refactor the varinat and subvarinat so a varinat reflect the subvarinats not a separate entity
@@ -16,12 +18,11 @@ import { UpdateVariantDTO } from './dto/UpdateVariant';
 @Injectable()
 export class ProductService 
 {
-constructor(private readonly brandRepository:BrandRepository,private readonly categoryRepository:CategoryRepository, private readonly productFactor:ProductFactory,private readonly productRepository:ProductRepository){}
+constructor(private readonly brandRepository:BrandRepository,private readonly categoryRepository:CategoryRepository, private readonly productFactor:ProductFactory,private readonly productRepository:ProductRepository,private readonly uploadServices:UploadServices){}
 
-
-async AddProduct(addProductDTO:AddProductDTO,UserID:Types.ObjectId)
+// removed CoverImage:Express.Multer.File temporarly until i add the multible feilds
+async AddProduct(addProductDTO:AddProductDTO,UserID:Types.ObjectId,ProductImages:Express.Multer.File[])
 {
-// basicly the bypass is a option to skip the slug calculation of the brand wicj requrie a model injection via the set options so the doc expect a categoryid so it can activate the category hook
 const BrandExist = await this.brandRepository.GetOne({_id:addProductDTO.Brand})
 if(!BrandExist)
 {
@@ -36,11 +37,38 @@ if(!CategoryExist)
 const ConstrcutedProduct = this.productFactor.CreateProduct(addProductDTO,UserID)
 
 const CreationResul = await this.productRepository.CreatDocument(ConstrcutedProduct)
-
 if(!CreationResul)
 {
     throw new InternalServerErrorException()
 }
+
+const ImgesPathes = ProductImages.map((Image)=>{return Image.path})
+const Folder = `${FolderTypes.App}/${FolderTypes.Products}/${CreationResul._id.toString()}/${FolderTypes.Photos}`
+
+const UploadedImages = await this.uploadServices.uploadMany(ImgesPathes,Folder)
+if(!UploadedImages)
+{
+  await this.uploadServices.deleteFolder(Folder)
+  await this.productRepository.DeleteOne({_id:CreationResul._id})
+  throw new InternalServerErrorException("Error C-U")
+}
+
+// const UploadCover = await this.uploadServices.uploadOne(CoverImage.path,Folder)
+// if(!UploadCover)
+// {
+//   await this.uploadServices.deleteFolder(Folder)
+//   await this.productRepository.DeleteOne({_id:CreationResul._id})
+//   throw new InternalServerErrorException("Error C-U")
+// }
+
+const UpdateResult = await this.productRepository.UpdateOne({_id:CreationResul._id},{$set:{ProductImages:UploadedImages,CoverImage:ImgesPathes}})
+if(!UpdateResult)
+{
+  await this.uploadServices.deleteFolder(Folder)
+  await this.productRepository.DeleteOne({_id:CreationResul._id})
+  throw new InternalServerErrorException()
+}
+
 return true
 }
 

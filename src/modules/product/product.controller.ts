@@ -1,12 +1,16 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query, UseGuards, UseInterceptors} from '@nestjs/common';
 import { ProductService } from './product.service';
-import { AddProductDTO } from './dto';
-import { Roles, UserData } from '@Sahred/Decorators';
+import { FileData, Roles, UserData } from '@Sahred/Decorators';
 import { Types } from 'mongoose';
 import { AuthGuard, RoleGuard } from '@Sahred/Guards';
-import { ValidMongoID } from '@Sahred/Pipes';
+import { ParseAndValidateJsonPipe, ValidMongoID } from '@Sahred/Pipes';
 import { UpdateProductDTO } from './dto/UpdateProduct.dto';
 import { UpdateVariantDTO } from './dto/UpdateVariant';
+import { Filecount } from '@Sahred/Enums';
+import { FileInterceptor } from '@Sahred/Interceptors';
+import { FileTypes } from '@Sahred/Interfaces';
+import { AddProductDTO } from './dto';
+
 
 
 @Controller('product')
@@ -16,14 +20,21 @@ export class ProductController
 {
 constructor(private readonly productService: ProductService) {}
 
+//  to modefiy the custome inteceptor so it can hamdle multible files and be named not postionla
+
+
+
 @Post("addproduct")
-async AddProduct(@Body() AddProductDTO:AddProductDTO ,@UserData("_id") UserID:Types.ObjectId)
+@UseInterceptors(new FileInterceptor(FileTypes.Image,50,Filecount.Files,"ProductImages",false))
+// ParseAndValidateJsonPipe auto validate with the  DTO you send  do not ever add the return the :DTO 
+async AddProduct(@Body("ProductData",new ParseAndValidateJsonPipe(AddProductDTO)) AddProductDTO:any,@UserData("_id") UserID:Types.ObjectId,@FileData({filecount:Filecount.Files,optional:false}) ProductImages:Express.Multer.File[])
 {
- const Result = await this.productService.AddProduct(AddProductDTO,UserID)
+// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+ const Result = await this.productService.AddProduct(AddProductDTO,UserID,ProductImages)
  if(Result==true)
  return{ message: `product Added successfully`, status: 200};
 }
-
+ 
 @Get("specificproduct/:ProductID")
 async GetOneProduct(@Param("ProductID",ValidMongoID) ProductID:Types.ObjectId)
 {

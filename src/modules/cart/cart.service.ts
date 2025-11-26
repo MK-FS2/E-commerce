@@ -147,7 +147,7 @@ async Reducefromcart(UserID:Types.ObjectId,ProductID:Types.ObjectId,VariantID:Ty
 }
 
 
-async RemoveItem(UserID:Types.ObjectId,ProductID:Types.ObjectId,VariantID:Types.ObjectId)
+async RemoveIteam(UserID:Types.ObjectId,ProductID:Types.ObjectId,VariantID:Types.ObjectId)
 {
 const ProductExist = await this.cartRepository.FindOne({ UserID, CartProducts:{$elemMatch:{ProductID:ProductID,VariantID:VariantID}}},{"CartProducts.$": 1 });
 if(!ProductExist)
@@ -162,4 +162,10 @@ if(!RemovingResult)
 return true
 }
 
+
+async Getcart(UserID:Types.ObjectId)
+{
+const Cart = await this.cartRepository.GetCart(UserID)
+return Cart
+}
 }

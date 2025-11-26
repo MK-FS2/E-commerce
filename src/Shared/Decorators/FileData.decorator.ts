@@ -25,7 +25,7 @@ export const FileData = createParamDecorator(
         {
             return undefined
         }
-        throw new BadGatewayException("No file uploaded")
+        throw new BadGatewayException("No file uploaded cv")
     }
     Target = req.file
     return Target

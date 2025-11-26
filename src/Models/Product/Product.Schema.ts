@@ -85,6 +85,7 @@ export class Variants
 @Schema({timestamps:true ,toObject:{virtuals:true},toJSON:{virtuals:true}})
 export class Product
 {
+readonly FinaPrice?:number
 @Prop({type:String,required:true})
 ProductName:string
 

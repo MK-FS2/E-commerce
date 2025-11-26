@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { CartService } from './cart.service';
 import { AuthGuard, RoleGuard } from '@Sahred/Guards';
 import { Roles, UserData } from '@Sahred/Decorators';
@@ -22,7 +22,7 @@ export class CartController
  }
 
 @Put("reduceiteam/:ProductID/:VariantID")
-async Reduceiteam(@UserData("_id")UserID:Types.ObjectId,@Param("ProductID")ProductID:Types.ObjectId,@Param("VariantID")VariantID:Types.ObjectId)
+async Reduceiteam(@UserData("_id")UserID:Types.ObjectId,@Param("ProductID",ValidMongoID)ProductID:Types.ObjectId,@Param("VariantID",ValidMongoID)VariantID:Types.ObjectId)
 {
 const Result = await this.cartService.Reducefromcart(UserID,ProductID,VariantID)
 if(Result == true)
@@ -30,13 +30,19 @@ return{message: "Cart updated successfully", status: 200}
 }
 
 @Delete("removeiteam/:ProductID/:VariantID")
-async RemoveItem(@UserData("_id")UserID:Types.ObjectId,@Param("ProductID")ProductID:Types.ObjectId,@Param("VariantID")VariantID:Types.ObjectId)
+async RemoveIteam(@UserData("_id")UserID:Types.ObjectId,@Param("ProductID",ValidMongoID)ProductID:Types.ObjectId,@Param("VariantID",ValidMongoID)VariantID:Types.ObjectId)
 {
-const Result = await this.cartService.RemoveItem(UserID,ProductID,VariantID)
+const Result = await this.cartService.RemoveIteam(UserID,ProductID,VariantID)
 if(Result == true)
 return{message: "Cart updated successfully", status: 200}
 }
 
+@Get("getcart")
+async GetCart(@UserData("_id") UserID:Types.ObjectId)
+{
 
+const Data = await this.cartService.Getcart(UserID)
+return {Data}
+}
 
 }

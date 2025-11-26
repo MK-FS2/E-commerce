@@ -49,8 +49,6 @@ if(!Updateresult)
 return true
 }
 
-
-
 async UpdateCategory(updateCategoryDTO: UpdateCategoryDTO, UserID: Types.ObjectId, CategoryID: Types.ObjectId) {
     const { CategoryName, ParentCategoryID ,Status} = updateCategoryDTO;;
     if (!CategoryName && !ParentCategoryID && Status== undefined || null) 

@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { SchemaTypes, Types } from "mongoose";
 
-@Schema({timestamps:{createdAt:true,updatedAt:false}})
+@Schema({ timestamps: { createdAt: true, updatedAt: false }})
 export class CartProduct 
 {
 @Prop({type:SchemaTypes.ObjectId,required:true})
@@ -15,9 +15,10 @@ Quantity:number
 }
 
 
-@Schema()
+@Schema({toJSON: { virtuals: true }, toObject: { virtuals: true }})
 export class Cart 
 {
+
 @Prop({type:SchemaTypes.ObjectId,required:true}) 
 UserID:Types.ObjectId
 
@@ -26,3 +27,6 @@ CartProducts?:CartProduct[]
 }
 
 export const CartSchema = SchemaFactory.createForClass(Cart)
+
+
+

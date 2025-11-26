@@ -6,7 +6,8 @@ import { mergeMap } from 'rxjs/operators';
 import { Request, Response } from 'express';
 
 @Injectable()
-export class FileInterceptor implements NestInterceptor {
+export class FileInterceptor implements NestInterceptor 
+{
   constructor(private fileTypes: string[],private size: number,private UploadType: Filecount,private FieldName: string,private Optional:boolean) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> 
@@ -17,7 +18,7 @@ export class FileInterceptor implements NestInterceptor {
     const multer = FileUploadCloud(this.fileTypes, this.size);
 
     const handler = this.UploadType === Filecount.File? multer.single(this.FieldName): multer.array(this.FieldName, 6);
-
+   console.log(this.UploadType)
     return new Observable<void>(observer => 
     {
       handler(req, res, (err: any) => 
@@ -35,7 +36,7 @@ export class FileInterceptor implements NestInterceptor {
           observer.next();
           observer.complete();
           }
-          observer.error(new InternalServerErrorException('No file uploaded'));
+          observer.error(new InternalServerErrorException(`No file uploaded`));
           return;
         }
 

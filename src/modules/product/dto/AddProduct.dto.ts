@@ -2,6 +2,7 @@
 import {IsString,IsNotEmpty,IsNumber,Min,IsEnum,IsOptional,IsMongoId,IsArray,ValidateNested,registerDecorator,ValidationOptions,ValidationArguments,IsBoolean, MinLength, MaxLength,} from "class-validator";
 import { DiscountTypes } from "@Models/Product";
 import { Types } from "mongoose";
+import { Type } from "class-transformer";
 
 
 export function IsValidDiscount(validationOptions?: ValidationOptions) 
@@ -20,6 +21,9 @@ export function IsValidDiscount(validationOptions?: ValidationOptions)
         validate(value: any, args: ValidationArguments) 
         {
           const obj = args.object as any;
+
+          console.log("Validating object:", obj);
+
           const discountType: DiscountTypes = obj.DiscountType;
           const price: number = obj.Price;
 
@@ -90,14 +94,15 @@ export class VariantDTO
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
+  @Type(() => BaseVariantDTO) // ADD THIS LINE - tells transformer how to convert SubVariants
   SubVariants?: BaseVariantDTO[];
 }
-
 
 export class AddProductDTO 
 {
   @IsString()
   @IsNotEmpty()
+  @MinLength(2)
   ProductName: string;
 
   @IsString()
@@ -118,19 +123,18 @@ export class AddProductDTO
 
   @IsOptional()
   @IsNumber()
-  @IsValidDiscount({ message: "Discount amount is invalid based on discount type" })
+  @IsValidDiscount({message:"Discount amount is invalid based on discount type"})
   DiscounstAmount: number;
 
   @IsOptional()
-  @IsEnum(DiscountTypes, { message: "DiscountType must be '%' or '$'" })
+  @IsEnum(DiscountTypes,{message: "DiscountType must be '%' or '$'"})
   DiscountType: DiscountTypes;
-
 
   @IsArray()
   @ValidateNested({ each: true })
+  @Type(() => VariantDTO) 
   Variants: VariantDTO[];
 
-  
   @IsOptional()
   DiscountStatus?: boolean;
 }
