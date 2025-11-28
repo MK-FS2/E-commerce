@@ -1,9 +1,7 @@
-import { Address, Customer } from "@Models/Users"
 import { BaseUserEntity } from "./BaseUserEntity"
 
 
-export class CustomerEntity extends BaseUserEntity implements Customer 
+export class CustomerEntity extends BaseUserEntity 
 {
-Address!:Address 
-UserAgent!:boolean
+UserAgent:boolean
 }

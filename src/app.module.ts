@@ -7,6 +7,7 @@ import { CommonModels } from '@Sahred/Modules';
 import { BrandModule } from './modules/brand/brand.module';
 import { ProductModule } from './modules/product/product.module';
 import { CartModule } from './modules/cart/cart.module';
+import { UserModule } from './modules/user/user.module';
 
 
 
@@ -20,7 +21,8 @@ import { CartModule } from './modules/cart/cart.module';
     BrandModule,
     CategoriesModule,
     ProductModule,
-    CartModule
+    CartModule,
+    UserModule
   ]
 })
 export class AppModule {}

@@ -11,6 +11,7 @@ import { FileInterceptor } from '@Sahred/Interceptors';
 import { FileTypes } from '@Sahred/Interfaces';
 import { AddProductDTO } from './dto';
 import { UpdateImageDTO } from './dto/UpdateImage.dto';
+import { FilesInterceptor } from '@Sahred/Interceptors/FilesUpload.interceptor';
 
 
 
@@ -106,6 +107,32 @@ async DeleteProductImage(@Param("ProductID",ValidMongoID)ProductID:Types.ObjectI
 const Result = await this.productService.DeleteProductImage(updateImageDTO,UserID,ProductID)
 if(Result == true)
 return{ message: `Image updated successfully`, status: 200};
+}
+
+
+@Get("mok")
+@UseInterceptors(
+    new FilesInterceptor([
+        {
+            Filecount: Filecount.File,
+            Optional: false,
+            Size: 5 * 1024 * 1024,
+            FileType:FileTypes.Image,
+            FieldName: 'avatar'
+        },
+        {
+            Filecount: Filecount.Files,
+            Optional: true,
+            Size: 10 * 1024 * 1024,
+            FileType:FileTypes.Image,
+            FieldName: 'gallery',
+            MaxImagecount: 5
+        }
+    ])
+)
+mock(@FileData({filecount:Filecount.Files,optional:false})Files:Express.Multer.File[],@FileData({filecount:Filecount.File,optional:false})File:Express.Multer.File)
+{
+  return {Files,File}
 }
 
 }
