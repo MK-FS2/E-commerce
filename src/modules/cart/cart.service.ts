@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { CartFactory } from './factory/index';
 import { BaseVariant } from '@Models/Product';
 import { ProductRepository, Variants } from '@Models/Product';

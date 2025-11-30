@@ -94,7 +94,7 @@ export class VariantDTO
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => BaseVariantDTO) // ADD THIS LINE - tells transformer how to convert SubVariants
+  @Type(() => BaseVariantDTO) 
   SubVariants?: BaseVariantDTO[];
 }
 

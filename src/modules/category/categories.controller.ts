@@ -1,8 +1,8 @@
 import { UpdateCategoryDTO } from './dto/Updatecategory.dto';
-import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { CategoryDTO } from './dto';
-import { FileData, PublicBypass, Roles, UserData } from '@Sahred/Decorators';
+import {PublicBypass, Roles, UserData } from '@Sahred/Decorators';
 import mongoose, { Types } from 'mongoose';
 import { AuthGuard, RoleGuard } from '@Sahred/Guards';
 import { ValidMongoID } from '@Sahred/Pipes';
@@ -20,7 +20,7 @@ export class CategoriesController
 
   @Post("/AddCategory")
   @UseInterceptors(new FileInterceptor(FileTypes.Image,10,Filecount.File,"Image",true))
-  async AddingCategory(@Body() CategoryDTO:CategoryDTO , @UserData("_id") userID:string,@FileData({filecount:Filecount.File,optional:true}) File:Express.Multer.File)
+  async AddingCategory(@Body() CategoryDTO:CategoryDTO , @UserData("_id") userID:string,@UploadedFiles()File:Express.Multer.File)
   {
     const UserID = new mongoose.Types.ObjectId(userID)
     const Result = await this.categoriesService.AddCategory(CategoryDTO,UserID,File)

@@ -1,53 +1,37 @@
-import { Filecount } from '@Sahred/Enums';
+import { BadRequestException, createParamDecorator, ExecutionContext, InternalServerErrorException } from '@nestjs/common';
 
-import { BadGatewayException, createParamDecorator, ExecutionContext, InternalServerErrorException } from '@nestjs/common';
-
-interface FileDataOptions 
-{
-  filecount: Filecount;
+interface FileDataOptions {
   optional: boolean;
+  fieldname?: string;
 }
 
-export const FileData = createParamDecorator(
-  (data:FileDataOptions,context:ExecutionContext) => 
-  {
+export const FileData = createParamDecorator((data:FileDataOptions,context:ExecutionContext) => 
+    {
     try 
     {
-    const {filecount,optional} = data
-    const req = context.switchToHttp().getRequest()
-    let Target: Express.Multer.File | Express.Multer.File[]
+      const {optional,fieldname} = data;
+      const req = context.switchToHttp().getRequest();
+      const files = req.files;
 
-    if(filecount == Filecount.File)
+      if (!files) 
+      {
+        if (optional) return null;
+        throw new BadRequestException('No files uploaded');
+      }
+
+      const target: Express.Multer.File[] | undefined = fieldname ? files[fieldname] : undefined;
+
+      if (!target) 
+      {
+        if (optional) return null;
+        throw new BadRequestException(`${fieldname} file is required`);
+      }
+
+      return target;
+    } 
+    catch (err) 
     {
-    if(!req.file)
-    {
-        if(optional)
-        {
-            return undefined
-        }
-        throw new BadGatewayException("No file uploaded cv")
-    }
-    Target = req.file
-    return Target
-    }
-    else if(filecount == Filecount.Files)
-    {
-    if(!req.files)
-    {
-    if (optional) return undefined;
-     throw new BadGatewayException("No file uploaded cx")
-    }
-    Target = req.files
-    return Target
-    }
-    else 
-    {
-        throw new InternalServerErrorException("Filedata")
-    }
-    }
-    catch(err)
-    {
-    throw new InternalServerErrorException(err)
+      throw new InternalServerErrorException(err);
     }
   },
 );

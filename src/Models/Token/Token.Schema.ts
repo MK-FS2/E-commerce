@@ -9,8 +9,8 @@ export class Token
 accestoken:string
 @Prop({type:String,required:true})
 refreashtoken:string
-@Prop({type:SchemaTypes.ObjectId,required:true})
+@Prop({type:SchemaTypes.ObjectId,required:true,ref:"User"})
 UserID:Types.ObjectId
 }
 
-export const TokenSchema = SchemaFactory.createForClass(Token ) 
+export const TokenSchema = SchemaFactory.createForClass(Token) 

@@ -1,6 +1,6 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query, UseGuards, UseInterceptors} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query, UploadedFiles, UseGuards, UseInterceptors} from '@nestjs/common';
 import { ProductService } from './product.service';
-import { FileData, Roles, UserData } from '@Sahred/Decorators';
+import { FileData, PublicBypass, Roles, UserData } from '@Sahred/Decorators';
 import { Types } from 'mongoose';
 import { AuthGuard, RoleGuard } from '@Sahred/Guards';
 import { ParseAndValidateJsonPipe, ValidMongoID } from '@Sahred/Pipes';
@@ -30,7 +30,7 @@ constructor(private readonly productService: ProductService) {}
 @Post("addproduct")
 @UseInterceptors(new FileInterceptor(FileTypes.Image,50,Filecount.Files,"ProductImages",false))
 // ParseAndValidateJsonPipe auto validate with the  DTO you send  do not ever add the return the :DTO 
-async AddProduct(@Body("ProductData",new ParseAndValidateJsonPipe(AddProductDTO)) AddProductDTO:any,@UserData("_id") UserID:Types.ObjectId,@FileData({filecount:Filecount.Files,optional:false}) ProductImages:Express.Multer.File[])
+async AddProduct(@Body("ProductData",new ParseAndValidateJsonPipe(AddProductDTO)) AddProductDTO:any,@UserData("_id") UserID:Types.ObjectId,@UploadedFiles() ProductImages:Express.Multer.File[])
 {
 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
  const Result = await this.productService.AddProduct(AddProductDTO,UserID,ProductImages)
@@ -87,7 +87,7 @@ return{ message:`Varinat deleted successfully`, status: 200};
 
 @Put("updateproductimage/:ProductID")
 @UseInterceptors(new FileInterceptor(FileTypes.Image,10,Filecount.File,"Image",false))
-async UpdateproductImage(@Body()updateImageDTO:UpdateImageDTO,@Param("ProductID",ValidMongoID)ProductID:Types.ObjectId,@UserData("_id")UserID:Types.ObjectId,@FileData({filecount:Filecount.File,optional:false}) File:Express.Multer.File)
+async UpdateproductImage(@Body()updateImageDTO:UpdateImageDTO,@Param("ProductID",ValidMongoID)ProductID:Types.ObjectId,@UserData("_id")UserID:Types.ObjectId,@UploadedFiles() File:Express.Multer.File)
 {
 const Result = await this.productService.UpdateProductImage(UserID,updateImageDTO,ProductID,File)
 if(Result == true)
@@ -111,11 +111,12 @@ return{ message: `Image updated successfully`, status: 200};
 
 
 @Get("mok")
+@PublicBypass()
 @UseInterceptors(
     new FilesInterceptor([
         {
             Filecount: Filecount.File,
-            Optional: false,
+            Optional: true,
             Size: 5 * 1024 * 1024,
             FileType:FileTypes.Image,
             FieldName: 'avatar'
@@ -130,9 +131,9 @@ return{ message: `Image updated successfully`, status: 200};
         }
     ])
 )
-mock(@FileData({filecount:Filecount.Files,optional:false})Files:Express.Multer.File[],@FileData({filecount:Filecount.File,optional:false})File:Express.Multer.File)
+mock(@FileData({optional:true,fieldname:"avatar"})avatar:Express.Multer.File,@FileData({optional:false,fieldname:"gallery"})gallery:Express.Multer.File[])
 {
-  return {Files,File}
-}
 
+ return { avatar,gallery };
+}
 }

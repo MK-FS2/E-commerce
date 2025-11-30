@@ -13,13 +13,13 @@ export class UserController
 {
   constructor(private readonly userService: UserService) {}
 
-  @Post("addnewaddress")
-  async AddAddress(@UserData("_id")UserID:Types.ObjectId,@Body()addressDTO:AddressDTO)
+@Post("addnewaddress")
+async AddAddress(@UserData("_id")UserID:Types.ObjectId,@Body()addressDTO:AddressDTO)
   {
    const Result = await this.userService.AddAddress(UserID,addressDTO)
    if(Result == true)
    return{ message: `Address Added successfully`, status: 200};
-  }
+}
 
 @Put("editaddress/:AddressID")
 async EditAddress(@Body() updateAddressDTO:UpdateAddressDTO,@UserData("_id")UserID:Types.ObjectId,@Param("AddressID",ValidMongoID)AddressID:Types.ObjectId)
